@@ -1,0 +1,1724 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#174ea6">
+<title>SS13 Form Builder FINAL v9</title>
+<style>
+*{box-sizing:border-box}
+:root{
+ --bg:#eef2f6;--panel:#fff;--text:#17212b;--muted:#667085;--line:#d7dee8;
+ --blue:#d8e7ff;--red:#ffdeda;--orange:#ffe9c4;--green:#ddf0d8;--gray:#e9ecef;--yellow:#fff4bf;--purple:#eadcff;--cyan:#d8f4f8;--pink:#ffdff0;--teal:#d7f2ea;--brown:#eadfd5;--slate:#dce3ea;
+ --wa:#25d366;--danger:#d92d20;--accent:#174ea6
+}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+button,input,select,textarea{font:inherit}
+button{border:0;border-radius:9px;padding:8px 10px;font-weight:750}
+.top{position:sticky;top:0;z-index:40;background:#fff;border-bottom:1px solid var(--line)}
+.toprow{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:5px 8px}
+.brand{font-size:16px;font-weight:850;line-height:1.05}.sub{font-size:9px;color:var(--muted);line-height:1.1;margin-top:1px}
+.topBtns{display:flex;gap:4px}.topBtns button{background:#edf1f5;padding:5px 7px;min-width:34px;height:34px}
+.tabs{display:flex;gap:4px;overflow:auto;padding:0 8px 5px}
+.tab{white-space:nowrap;background:#e9eef5;color:#344054;padding:5px 9px;font-size:13px;border-radius:8px}
+.tab.active{background:var(--accent);color:#fff}
+main{max-width:920px;margin:auto;padding:5px 8px 92px}
+.sheetHead{display:flex;align-items:center;justify-content:space-between;gap:6px;margin:1px 0 5px}
+.sheetHead h1{font-size:16px;margin:0;line-height:1.05}.meta{font-size:9px;color:var(--muted);line-height:1.1;margin-top:1px}
+.addHere{background:#174ea6;color:#fff;padding:6px 9px;font-size:13px;white-space:nowrap}
+.node{position:relative}
+.block{border:1px solid rgba(0,0,0,.09);border-radius:13px;margin:8px 0;overflow:hidden}
+.block.blue{background:var(--blue)}.block.red{background:var(--red)}.block.orange{background:var(--orange)}.block.green{background:var(--green)}.block.gray{background:var(--gray)}.block.yellow{background:var(--yellow)}.block.purple{background:var(--purple)}.block.cyan{background:var(--cyan)}.block.pink{background:var(--pink)}.block.teal{background:var(--teal)}.block.brown{background:var(--brown)}.block.slate{background:var(--slate)}
+.blockHead,.objHead{display:flex;align-items:flex-start;justify-content:space-between;gap:7px}.headText{min-width:0;flex:1}.headExtra{font-size:15px;line-height:1.15;white-space:pre-wrap}.inlineEdit{outline:none;border-radius:5px;padding:1px 3px}.inlineEdit:focus{background:rgba(255,255,255,.78);box-shadow:0 0 0 2px rgba(23,78,166,.18)}
+.blockHead{padding:8px 10px;font-weight:850}
+.blockTools,.objTools{display:flex;align-items:center;gap:4px}
+.mini{padding:3px 7px;background:rgba(255,255,255,.62)}.mini.hasFrame{background:#174ea6;color:#fff;box-shadow:0 0 0 2px rgba(23,78,166,.16)}
+.blockBody{padding:6px}
+.childGrid{display:grid;gap:6px}
+.object{background:rgba(255,255,255,.82);border-radius:10px;padding:7px;min-width:0}
+.object.off{opacity:.45;filter:grayscale(.6)}
+.objHead{margin-bottom:6px}.objHead h3{font-size:14px;margin:0}
+.switch{position:relative;width:34px;height:20px;flex:none}.switch input{display:none}
+.slider{position:absolute;inset:0;border-radius:20px;background:#a7adb5}
+.slider:after{content:"";position:absolute;width:16px;height:16px;top:2px;left:2px;border-radius:50%;background:#fff;transition:.15s}
+.switch input:checked+.slider{background:#2e8b57}.switch input:checked+.slider:after{transform:translateX(14px)}
+.directItem{background:rgba(255,255,255,.74);border-radius:9px;padding:6px}
+.row{display:grid;grid-template-columns:78px 1fr;gap:5px;align-items:center;margin:4px 0}.row.tripleRow{grid-template-columns:36px minmax(0,1fr);gap:1px}.row.noLead{grid-template-columns:1fr}
+.lab{font-size:11px;font-weight:750}.fieldLabel{font-size:var(--label-fs,11px);font-weight:var(--label-fw,750);font-style:var(--label-fi,normal)}.control{display:flex;align-items:center;gap:4px;min-width:0}
+.val{width:100%;min-width:0;height:31px;border:1px solid #aeb8c4;border-radius:7px;background:#fff;text-align:center;padding:3px 5px}
+.val.invalid{background:#ffe5e2;border:2px solid var(--danger)}
+.triple{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2px;width:100%}
+.ph{display:grid;grid-template-columns:11px minmax(0,1fr);gap:2px;align-items:center;font-size:9px;font-weight:850}.ph .val{width:100%;min-width:0}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:4px;width:100%}.multi{display:grid;gap:4px;width:100%}.multiCell{display:grid;grid-template-columns:auto 1fr;gap:2px;align-items:center;font-size:9px;font-weight:850}.multiCell.noLabel{grid-template-columns:1fr}
+.textline{font-size:12px;white-space:pre-wrap}.sepLine{font-size:15px;letter-spacing:1px}
+.empty{border:1px dashed #abb6c4;border-radius:10px;padding:16px;text-align:center;color:var(--muted);background:#f8fafc}
+.bottom{position:fixed;left:0;right:0;bottom:0;z-index:45;display:flex;gap:8px;padding:8px 10px calc(8px + env(safe-area-inset-bottom));background:rgba(255,255,255,.98);border-top:1px solid var(--line)}
+.bottom button{flex:1;padding:12px}.report{background:#e8eef6}.wa{background:var(--wa);color:#fff}
+.modal{display:none;position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.5);padding:12px}.modal.show{display:flex}
+.modalCard{margin:auto;width:min(720px,100%);max-height:92vh;background:#fff;border-radius:14px;padding:12px;display:flex;flex-direction:column}
+.mhead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}.mhead h2{font-size:18px;margin:0}.close{background:#edf1f5}
+.scroll{overflow:auto}
+.gridBtns{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+.gridBtns button{background:#edf1f5}
+.card{border:1px solid var(--line);border-radius:10px;padding:8px;margin:7px 0;background:#fafbfc}
+.card h3{font-size:14px;margin:0 0 7px}
+.formrow{display:grid;grid-template-columns:130px 1fr;gap:7px;align-items:center;margin:6px 0}
+.formrow label{font-size:12px;font-weight:700}.formrow input,.formrow select{height:32px;border:1px solid #cbd3dd;border-radius:7px;padding:4px 7px;width:100%}.checkline{display:flex;align-items:center;gap:8px;font-size:13px}.checkline input{width:18px;height:18px}.labelGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}.labelGrid input{height:32px;border:1px solid #cbd3dd;border-radius:7px;padding:4px 7px;width:100%}.hidden{display:none!important}
+.small{font-size:11px;color:var(--muted);line-height:1.35}
+.danger{background:#ffe4e1!important;color:#9f1d15}
+.warn{display:none;background:#fff3f1;border:1px solid #f2b8b5;border-radius:9px;padding:8px;font-size:12px;margin-bottom:7px;white-space:pre-line}.warn.show{display:block}
+textarea{width:100%;height:62vh;border:1px solid var(--line);border-radius:9px;padding:10px;resize:none}
+.mBtns{display:flex;gap:7px;margin-top:8px}.mBtns button{flex:1}
+.treeItem{display:grid;grid-template-columns:1fr auto;gap:6px;align-items:center;background:#f1f4f7;border-radius:8px;padding:6px;margin:5px 0}
+.treeBtns{display:flex;gap:4px}.treeBtns button{padding:5px 7px;background:#e5ebf2}
+.ind1{margin-left:12px}.ind2{margin-left:24px}
+@media(max-width:520px){.row{grid-template-columns:64px 1fr}.row.tripleRow{grid-template-columns:29px minmax(0,1fr);gap:1px}.triple{gap:1px}.ph{grid-template-columns:7px minmax(0,1fr);gap:1px}.lab{font-size:10px}.formrow{grid-template-columns:100px 1fr}}
+</style>
+
+<style>
+:root{
+ --value-font-size:14px;
+ --value-font-weight:400;
+ --value-font-style:normal;
+ --value-text-decoration:none;
+}
+.val{
+ font-size:var(--value-font-size)!important;
+ font-weight:var(--value-font-weight)!important;
+ font-style:var(--value-font-style)!important;
+ text-decoration:var(--value-text-decoration)!important;
+}
+</style>
+
+<style>
+.delta{font-size:10px;margin-left:3px;white-space:nowrap;font-weight:600}
+.delta.up{color:#16833b}.delta.down{color:#c62828}.delta.same{color:#777}
+</style>
+<style>
+#fieldStyleModal{z-index:120}
+</style>
+<style>
+@media(max-width:520px){
+ .sub{display:none}
+ .toprow{padding:4px 6px}
+ .brand{font-size:15px}
+ .topBtns button{min-width:32px;height:32px;padding:4px 6px}
+ .tabs{padding:0 6px 4px}
+ .tab{font-size:12px;padding:4px 8px}
+ .sheetHead{margin:0 0 4px}
+ .sheetHead h1{font-size:15px}
+ .meta{font-size:9px}
+ .addHere{font-size:12px;padding:5px 8px}
+}
+</style><style>
+.archiveItem{border:1px solid var(--line);border-radius:10px;padding:8px;margin:7px 0;background:#fafbfc}
+.archiveTop{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:5px}
+.archiveTime{font-size:12px;font-weight:800}.archiveSheet{font-size:11px;color:var(--muted)}
+.archiveBtns{display:flex;gap:5px}.archiveBtns button{padding:5px 7px;background:#e8eef6}
+.archiveText{white-space:pre-wrap;font-size:12px;line-height:1.35;background:#fff;border-radius:7px;padding:7px;border:1px solid #e1e6ed;max-height:160px;overflow:auto}
+</style><style>
+#archiveModal{z-index:12000!important}
+#archiveModal .modalCard{z-index:12001!important}
+</style><style>
+body.workMode .addHere,body.workMode .mini,body.workMode .treeBtns{display:none!important}
+body.workMode .blockTools,body.workMode .objTools{gap:0}
+body.workMode [contenteditable="true"],body.workMode .inlineEdit{pointer-events:none!important;display:block!important;visibility:visible!important;opacity:1!important}
+.searchBox{width:100%;height:34px;border:1px solid var(--line);border-radius:8px;padding:5px 8px;margin-bottom:7px}
+.logItem,.templateItem{border:1px solid var(--line);border-radius:9px;padding:8px;margin:6px 0;background:#fafbfc}
+.logTime{font-size:12px;font-weight:800}.logText{font-size:12px;margin-top:3px}.rowBtns{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}.rowBtns button{padding:5px 7px;background:#e8eef6}
+</style><style>
+#calcModal{z-index:12000!important}
+.calcTabs{display:flex;gap:5px;overflow:auto;margin-bottom:8px}
+.calcTab{white-space:nowrap;background:#e9eef5;padding:6px 9px;border-radius:8px}
+.calcTab.active{background:#174ea6;color:#fff}
+.calcPanel{display:none}.calcPanel.active{display:block}
+.calcCard{border:1px solid var(--line);border-radius:10px;padding:9px;margin:7px 0;background:#fafbfc}
+.calcCard h3{margin:0 0 7px;font-size:14px}
+.calcGrid{display:grid;grid-template-columns:1fr auto;gap:5px 10px;font-size:13px}
+.calcGrid .v{font-weight:750;text-align:right}
+.calcNote{font-size:11px;color:var(--muted);line-height:1.35;margin-top:7px}
+.calcDev{display:inline-block;padding:2px 6px;border-radius:999px;font-size:11px;font-weight:800}
+.calcDev.green{background:#e0f3e5;color:#16743b}.calcDev.yellow{background:#fff2c8;color:#8a6300}.calcDev.red{background:#fde4e1;color:#a0271d}.calcDev.neutral{background:#e8edf3;color:#475467}
+.calcSettings{border-top:1px solid var(--line);margin-top:8px;padding-top:8px}
+</style><style>
+#calcSetupModal,#calcObjectModal{z-index:12010!important}
+.calcSetupItem{border:1px solid var(--line);border-radius:10px;padding:8px;margin:6px 0;background:#fafbfc;display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
+.calcRoleRow{display:grid;grid-template-columns:1fr 145px;gap:7px;align-items:center;margin:6px 0}
+.calcRoleRow select{height:32px;border:1px solid #cbd3dd;border-radius:7px;padding:4px 6px}
+</style>
+
+<style>
+body.workMode .fieldLabel,
+body.workMode .textline,
+body.workMode .sepLine,
+body.workMode .objHead h3,
+body.workMode .blockHead .headText,
+body.workMode .lab{
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
+body.workMode input.val{
+  pointer-events:auto!important;
+}
+</style>
+
+<style>
+body.workMode [data-inline]{
+  user-select:none!important;
+  caret-color:transparent!important;
+  outline:none!important;
+}
+body.workMode input.val{
+  pointer-events:auto!important;
+  user-select:text!important;
+  caret-color:auto!important;
+}
+</style>
+
+<style>
+.saveState{font-size:9px;color:#667085;min-width:16px;text-align:center}.saveState.busy{color:#b54708}.saveState.dirty{color:#f79009;font-weight:900}
+.objCollapsed>.objContent{display:none!important}.collapser{background:transparent!important;padding:2px 5px!important;min-width:22px}
+.searchHit{outline:3px solid #f4b400!important;outline-offset:2px;scroll-margin-top:85px}
+#notesModal,#statsModal,#helpModal,#validationModal,#searchModal{z-index:13000!important}
+.noteCat,.noteItem,.statCard,.helpCard,.validationItem{border:1px solid var(--line);border-radius:10px;padding:9px;margin:7px 0;background:#fafbfc}
+.noteItem.pinned{border-width:2px}.noteTitle{font-weight:850}.noteMeta{font-size:10px;color:var(--muted);margin-top:3px}.noteBody{white-space:pre-wrap;font-size:12px;margin-top:6px;line-height:1.4}
+.statGrid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.statBig{font-size:21px;font-weight:900}.statLabel{font-size:10px;color:var(--muted)}
+.helpCard h3{margin:0 0 6px}.helpCard p,.helpCard li{font-size:12px;line-height:1.45}.helpCard ul{padding-left:18px}
+.validationItem.error{border-left:5px solid #d92d20}.validationItem.warn{border-left:5px solid #f79009}.validationItem.info{border-left:5px solid #1570ef}
+.forceSendBtn{background:#d92d20!important;color:#fff!important}.favTab::before{content:"★ ";color:#f4b400}
+.searchBox{width:100%;height:34px;border:1px solid var(--line);border-radius:8px;padding:5px 8px;margin-bottom:7px}
+body.workMode .collapser{display:inline-block!important}
+</style>
+<style>
+.tab.pinnedTab::after{content:" 📌";font-size:.85em}
+</style>
+
+<style>
+.linkMark{
+  display:inline-flex;align-items:center;justify-content:center;
+  margin-left:3px;padding:0 2px;border:0;background:transparent!important;
+  color:#667085!important;font-size:10px!important;line-height:1;min-width:18px;height:20px;
+  vertical-align:middle;opacity:.95;cursor:pointer!important;
+  pointer-events:auto!important;touch-action:manipulation!important;position:relative;z-index:3
+}
+.linkMark:active{transform:scale(.96)}
+.linkMapRow{border:1px solid var(--line);border-radius:9px;padding:7px;margin:5px 0;background:#fafbfc;font-size:12px;line-height:1.35}
+body.workMode .linkMark{display:inline-flex!important;pointer-events:auto!important}
+</style>
+
+<style>
+.linkPopover{
+ position:fixed;z-index:25000!important;max-width:min(300px,86vw);
+ background:#fff;border:1px solid #cfd6df;border-radius:10px;
+ box-shadow:0 8px 24px rgba(0,0,0,.18);padding:8px 10px;
+ font-size:12px;line-height:1.35;color:#17212b
+}
+.linkPopover::before{
+ content:"";position:absolute;width:10px;height:10px;background:#fff;
+ border-left:1px solid #cfd6df;border-top:1px solid #cfd6df;
+ transform:rotate(45deg);top:-6px;left:18px
+}
+.linkPopoverTitle{font-weight:800;margin-bottom:4px}
+.linkPopoverRow{margin:3px 0}
+</style>
+</head>
+<body>
+<div class="top">
+ <div class="toprow">
+  <div><div class="brand">⚡ SS13 Form Builder FINAL v9</div><div class="sub">Свободный конструктор: добавляй прямо туда, куда нужно</div></div>
+  <div class="topBtns"><span id="saveState" class="saveState">✓</span><button id="searchBtn" title="Поиск">🔎</button><button id="notesBtn" title="Записная книжка">📝</button><button id="statsBtn" title="Статистика">📊</button><button id="undoBtn">↶</button><button id="redoBtn">↷</button><button id="calcBtn" title="Контроль расчётов">🧮</button><button id="workModeBtn" title="Рабочий режим">🔓</button><button id="toolsBtn">⚙️</button></div>
+ </div>
+ <div class="tabs" id="tabs"></div>
+</div>
+
+<main>
+ <div class="sheetHead">
+  <div><h1 id="sheetTitle"></h1><div class="meta" id="sheetMeta"></div></div>
+  <button class="addHere" data-add-target="sheet">＋ На лист</button>
+ </div>
+ <div id="canvas"></div>
+</main>
+
+<div class="bottom"><button class="report" id="previewBtn">👁 Отчёт</button><button class="wa" id="waBtn">WhatsApp</button></div>
+
+<div class="modal" id="addModal">
+ <div class="modalCard">
+  <div class="mhead"><h2 id="addTitle">Добавить сюда</h2><button class="close" data-close="addModal">✕</button></div>
+  <div class="gridBtns" id="addChoices"></div>
+  <div class="small" id="addHint" style="margin-top:8px"></div>
+ </div>
+</div>
+
+
+<div class="modal" id="multiModal">
+ <div class="modalCard">
+  <div class="mhead"><h2 id="multiTitle">Несколько чисел</h2><button class="close" data-close="multiModal">✕</button></div>
+  <div class="scroll">
+   <div class="card">
+    <div class="formrow"><label>Название группы</label><input id="mfGroup" placeholder="Можно оставить пустым"></div>
+    <div class="formrow"><label>Количество полей</label><input id="mfCount" type="number" min="2" max="6" inputmode="numeric" value="3"></div>
+    <div class="formrow"><label>Подписи полей</label><div class="checkline"><input id="mfUseLabels" type="checkbox"><span>Использовать подписи, например Бак / РПН</span></div></div>
+    <div id="mfLabelsWrap" class="hidden">
+      <div class="small" style="margin-bottom:5px">Подписи отдельных полей:</div>
+      <div class="labelGrid" id="mfLabels"></div>
+      <div class="formrow"><label>В отчёте</label><div class="checkline"><input id="mfReportLabels" type="checkbox"><span>Показывать подписи: Бак 4 РПН 4</span></div></div>
+    </div>
+    <div class="formrow"><label>Разделитель</label><input id="mfSeparator" placeholder="Например:  /  или пробел" value=" / "></div>
+    <div class="formrow"><label>Обрамление</label><div class="checkline"><input id="mfWrap" type="checkbox"><span>Добавлять символы вокруг каждого значения, например [45]</span></div></div>
+    <div id="mfWrapFields" class="hidden">
+      <div class="formrow"><label>Слева</label><input id="mfLeft" placeholder="["></div>
+      <div class="formrow"><label>Справа</label><input id="mfRight" placeholder="]"></div>
+    </div>
+   </div>
+   <div class="small">Всё настраивается в одном окне. Для температуры можно оставить название t°, 3 поля, без подписей, разделитель « / ». Для Бак/РПН — название группы пустое, 2 поля, подписи Бак и РПН, разделитель обычный пробел.</div>
+  </div>
+  <div class="mBtns"><button id="mfCancel">Отмена</button><button id="mfSave" style="background:#174ea6;color:#fff">Сохранить</button></div>
+ </div>
+</div>
+
+
+<div class="modal" id="fieldStyleModal">
+ <div class="modalCard">
+  <div class="mhead"><h2>Оформление поля</h2><button class="close" data-close="fieldStyleModal">✕</button></div>
+  <div class="scroll">
+   <div class="card" id="fsLabelCard">
+    <h3 id="fsLabelHeading">Название поля</h3>
+    <div class="formrow"><label>Размер</label><input id="fsLabelSize" type="number" min="8" max="28" step="1" inputmode="numeric" value="11"></div>
+    <div class="checkline"><input id="fsLabelBold" type="checkbox"><span><b>Жирный</b></span></div>
+    <div class="checkline"><input id="fsLabelItalic" type="checkbox"><span><i>Курсив</i></span></div>
+    <div class="checkline"><input id="fsLabelUnderline" type="checkbox"><span><u>Подчёркивание</u></span></div>
+   </div>
+   <div class="card" id="fsValueCard">
+    <h3>Вводимое значение</h3>
+    <div class="formrow"><label>Размер</label><input id="fsValueSize" type="number" min="10" max="30" step="1" inputmode="numeric" value="14"></div>
+    <div class="checkline"><input id="fsValueBold" type="checkbox"><span><b>Жирный</b></span></div>
+    <div class="checkline"><input id="fsValueItalic" type="checkbox"><span><i>Курсив</i></span></div>
+    <div class="checkline"><input id="fsValueUnderline" type="checkbox"><span><u>Подчёркивание</u></span></div>
+   </div>
+   <div class="small">Эти настройки применяются только к выбранному полю. Если сбросить — снова используются общие настройки проекта.</div>
+  </div>
+  <div class="mBtns"><button id="fsReset">Сбросить поле</button><button id="fsSave" style="background:#174ea6;color:#fff">Сохранить</button></div>
+ </div>
+</div>
+
+
+
+
+
+<div class="modal" id="searchModal"><div class="modalCard"><div class="mhead"><h2>🔎 Поиск</h2><button class="close" data-close="searchModal">✕</button></div><div class="scroll"><input id="sheetSearch" class="searchBox" placeholder="Печь 4, MW, Тр-р 1"><div class="mBtns"><button id="searchPrev">←</button><button id="searchNext">→</button></div><div id="searchInfo" class="small"></div></div></div></div>
+<div class="modal" id="notesModal"><div class="modalCard"><div class="mhead"><h2>📝 Записная книжка</h2><button class="close" data-close="notesModal">✕</button></div><div class="mBtns"><button id="newNoteCat">+ Категория</button><button id="newNote">+ Заметка</button><button id="restoreNotes">↶ Копия</button></div><div id="notesStorageState" class="small"></div><div class="scroll"><input id="notesSearch" class="searchBox" placeholder="Поиск"><div id="notesBody"></div></div></div></div>
+<div class="modal" id="statsModal"><div class="modalCard"><div class="mhead"><h2>📊 Статистика</h2><button class="close" data-close="statsModal">✕</button></div><div class="scroll"><div id="statsBody"></div></div></div></div>
+<div class="modal" id="validationModal"><div class="modalCard"><div class="mhead"><h2>⚠️ Проверка отчёта</h2><button class="close" data-close="validationModal">✕</button></div><div class="scroll"><div id="validationSummary"></div><div id="validationList"></div></div><div class="mBtns"><button data-close="validationModal">Вернуться</button><button id="forceSendValidation" class="forceSendBtn">Всё равно отправить</button></div></div></div>
+<div class="modal" id="helpModal"><div class="modalCard"><div class="mhead"><h2>❓ Справка</h2><button class="close" data-close="helpModal">✕</button></div><div class="scroll" id="helpBody"></div></div></div>
+
+<div class="modal" id="linkInfoModal">
+ <div class="modalCard">
+  <div class="mhead"><h2>↔ Связи поля</h2><button class="close" data-close="linkInfoModal">✕</button></div>
+  <div class="scroll" id="linkInfoBody"></div>
+ </div>
+</div>
+<div class="modal" id="linkMapModal">
+ <div class="modalCard">
+  <div class="mhead"><h2>↔ Все связи полей</h2><button class="close" data-close="linkMapModal">✕</button></div>
+  <div class="scroll" id="linkMapBody"></div>
+ </div>
+</div>
+
+<div class="modal" id="calcModal">
+ <div class="modalCard">
+  <div class="mhead"><h2>🧮 Контроль расчётов</h2><button class="close" data-close="calcModal">✕</button></div>
+  <div class="mBtns" style="margin:0 0 8px"><button id="calcEquipSettings">⚙️ Настройка оборудования</button></div>
+  <div class="calcTabs" id="calcTabs"></div>
+  <div class="scroll" id="calcBody"></div>
+  <div class="calcSettings">
+   <div class="checkline"><input id="calcColors" type="checkbox" checked><span>Цветовая оценка отклонений</span></div>
+   <div class="formrow"><label>🟢 до, %</label><input id="calcGreen" type="number" min="0" max="100" step="0.5" value="3"></div>
+   <div class="formrow"><label>🟡 до, %</label><input id="calcYellow" type="number" min="0" max="100" step="0.5" value="10"></div>
+   <div class="small">Калькулятор универсальный: вкладки строятся из объектов текущего листа. Роли полей определяются автоматически или задаются вручную в настройке оборудования.</div>
+  </div>
+ </div>
+</div>
+
+<div class="modal" id="calcSetupModal">
+ <div class="modalCard">
+  <div class="mhead"><h2>⚙️ Настройка оборудования</h2><button class="close" data-close="calcSetupModal">✕</button></div>
+  <div class="scroll" id="calcSetupBody"></div>
+ </div>
+</div>
+
+<div class="modal" id="calcObjectModal">
+ <div class="modalCard">
+  <div class="mhead"><h2 id="calcObjectTitle">Настройка объекта</h2><button class="close" data-close="calcObjectModal">✕</button></div>
+  <div class="scroll">
+   <div class="card">
+    <div class="checkline"><input id="coEnabled" type="checkbox" checked><span>Показывать этот объект в контроле расчётов</span></div>
+    <div class="formrow"><label>Номинальные U, кВ</label><input id="coNominal" placeholder="Например: 220, 110 или 6"></div>
+    <div class="small">Если фактическое линейное напряжение есть в объекте, используется оно. Если его нет — номинальные напряжения сопоставляются группам токов по порядку.</div>
+   </div>
+   <div class="card"><h3>Роли полей</h3><div id="coRoles"></div>
+    <div class="small">«Авто» определяет роль по названию поля. Можно вручную указать P, Q, S, cosφ, ток или линейное напряжение. Это позволяет подключать печи, вводы, двигатели и любое новое оборудование.</div>
+   </div>
+  </div>
+  <div class="mBtns"><button id="coCancel">Отмена</button><button id="coSave" style="background:#174ea6;color:#fff">Сохранить</button></div>
+ </div>
+</div>
+ </div>
+</div>
+
+<div class="modal" id="logModal">
+ <div class="modalCard">
+  <div class="mhead"><h2>📋 Журнал событий</h2><button class="close" data-close="logModal">✕</button></div>
+  <div class="scroll"><input id="logSearch" class="searchBox" placeholder="Поиск по времени, листу или событию"><div id="logList"></div></div>
+ </div>
+</div>
+
+<div class="modal" id="templatesModal">
+ <div class="modalCard">
+  <div class="mhead"><h2>🧩 Шаблоны</h2><button class="close" data-close="templatesModal">✕</button></div>
+  <div class="scroll"><div id="templatesList"></div></div>
+ </div>
+</div>
+
+<div class="modal" id="archiveModal">
+ <div class="modalCard">
+  <div class="mhead"><h2>🗂 Архив отчётов</h2><button class="close" data-close="archiveModal">✕</button></div>
+  <div class="scroll"><input id="archiveSearch" class="searchBox" placeholder="Поиск по дате, листу или тексту отчёта">
+   <div id="archiveList"></div>
+  </div>
+ </div>
+</div>
+
+<div class="modal" id="previewModal">
+ <div class="modalCard">
+  <div class="mhead"><h2>Готовый отчёт</h2><button class="close" data-close="previewModal">✕</button></div>
+  <div class="warn" id="warn"></div>
+  <textarea id="reportText" readonly></textarea>
+  <div class="mBtns"><button id="copyBtn">Копировать</button><button class="wa" id="waBtn2">WhatsApp</button></div>
+ </div>
+</div>
+
+<div class="modal" id="toolsModal">
+ <div class="modalCard">
+  <div class="mhead"><h2>⚙️ Лист и структура</h2><button class="close" data-close="toolsModal">✕</button></div>
+  <div class="scroll">
+   <div class="card"><h3>Лист</h3><div class="gridBtns">
+    <button id="renameSheet">Переименовать</button><button id="duplicateSheet">Дублировать лист</button>
+    <button id="newSheet">＋ Пустой лист</button><button id="deleteSheet" class="danger">Удалить лист</button>
+   </div></div>
+   
+<div class="card"><h3>Проверка перед отправкой</h3>
+ <div class="checkline"><input id="validationEnabled" type="checkbox" checked><span>Включить проверку отчёта</span></div>
+ <div class="formrow"><label>Максимум цифр</label><input id="vMaxDigits" type="number" min="1" max="8" value="3"></div>
+ <div class="formrow"><label>Температура Δ, °C</label><input id="vTempWarn" type="number" value="15"></div>
+ <div class="formrow"><label>Температура серьёзно, °C</label><input id="vTempHigh" type="number" value="25"></div>
+ <div class="formrow"><label>Перекос тока, %</label><input id="vPhaseWarn" type="number" value="10"></div>
+ <div class="formrow"><label>Перекос серьёзно, %</label><input id="vPhaseHigh" type="number" value="20"></div>
+ <div class="formrow"><label>Печь: перекос, %</label><input id="vFurnacePhaseWarn" type="number" value="25"></div>
+ <div class="formrow"><label>Печь: серьёзно, %</label><input id="vFurnacePhaseHigh" type="number" value="40"></div>
+ <div class="formrow"><label>Скачок к прошлому, %</label><input id="vJumpWarn" type="number" value="30"></div>
+ <div class="formrow"><label>S расч./изм., %</label><input id="vPowerWarn" type="number" value="5"></div>
+ <div class="formrow"><label>S серьёзно, %</label><input id="vPowerHigh" type="number" value="10"></div>
+ <div class="gridBtns"><button id="validationDefaults">По умолчанию</button></div>
+ <div class="small">Проверку можно полностью отключить. Необычный реальный режим не запрещается: доступна красная кнопка «Всё равно отправить».</div>
+</div>
+<div class="card"><h3>Текущий лист</h3><div class="gridBtns">
+ <button id="renameSheet">✏️ Переименовать</button><button id="pinSheet">📌 Закрепить лист</button>
+ <button id="restoreLastSent">Вернуть последний отправленный</button><button id="clearValues">Очистить показания</button><button id="favoriteSheet">⭐ Стартовый лист</button>
+</div><div class="small">Закреплённый лист нельзя удалить, пока закрепление не снято.</div></div>
+<div class="card"><h3>Передача</h3><div class="gridBtns"><button id="exportTemplate">Экспорт шаблона</button><button id="importTemplate">Импорт шаблона</button><button id="exportProjectClean">Экспорт проекта</button></div><input id="importTemplateFile" type="file" accept=".json,.ss13,application/json" hidden><div class="small">Шаблон предназначен для передачи коллеге: без архива, заметок и вашей истории.</div></div>
+<div class="card"><h3>Время и дата</h3>
+<div class="checkline"><input id="reportDateTime" type="checkbox"><span>Добавлять дату и время в текст отчёта WhatsApp</span></div>
+<div class="small">По умолчанию выключено. Внутри программы время последней отправки и журнал событий ведутся всегда.</div>
+<div class="gridBtns" style="margin-top:7px"><button id="openLog">Журнал событий</button></div>
+</div>
+<div class="card"><h3>Рабочий режим</h3>
+<div class="checkline"><input id="workModeSetting" type="checkbox"><span>Скрыть кнопки конструктора и защитить структуру от случайного редактирования</span></div>
+<div class="small">В рабочем режиме остаются поля ввода, отчёт, WhatsApp и кнопка 🔒/🔓 сверху.</div>
+</div>
+<div class="card"><h3>Шаблоны</h3>
+<div class="gridBtns"><button id="saveTemplate">Сохранить текущий лист как шаблон</button><button id="openTemplates">Открыть шаблоны</button></div>
+</div>
+<div class="card"><h3>Полная резервная копия</h3>
+<div class="gridBtns"><button id="backupAll">Скачать резервную копию</button><button id="restoreAll">Восстановить копию</button></div>
+<input id="restoreAllFile" type="file" accept=".json,application/json" hidden>
+<div class="small">Сохраняются листы, настройки, версии, архив, шаблоны и журнал событий.</div>
+</div><div class="card"><h3>Изменение показаний</h3>
+<div class="checkline"><input id="showDelta" type="checkbox" checked><span>Показывать изменение относительно предыдущего отчёта</span></div>
+<div class="small">После сохранения/отправки отчёта текущие значения становятся предыдущими. В следующем отчёте рядом с изменившимся значением появится, например, ↑3, ↓0,2. Если значение не изменилось — ничего не показывается.</div>
+</div><div class="card"><h3>Общее оформление шрифтов</h3>
+    <div class="small" style="margin-bottom:8px">Эти параметры меняют сразу весь проект. Индивидуальная настройка поля через <b>Aa</b> имеет приоритет над общей.</div>
+
+    <div class="card" style="margin:6px 0">
+      <h3>Названия полей</h3>
+      <div class="formrow"><label>Размер</label><input id="globalLabelSize" type="number" min="8" max="28" step="1" inputmode="numeric" value="11"></div>
+      <div class="checkline"><input id="globalLabelBold" type="checkbox" checked><span><b>Жирный</b></span></div>
+      <div class="checkline"><input id="globalLabelItalic" type="checkbox"><span><i>Курсив</i></span></div>
+      <div class="checkline"><input id="globalLabelUnderline" type="checkbox"><span><u>Подчёркивание</u></span></div>
+      <div class="small">Например: MW, MVAr, MVA, Cos, Ток, t°.</div>
+    </div>
+
+    <div class="card" style="margin:6px 0">
+      <h3>Обычный текст</h3>
+      <div class="formrow"><label>Размер</label><input id="globalPlainSize" type="number" min="8" max="28" step="1" inputmode="numeric" value="12"></div>
+      <div class="checkline"><input id="globalPlainBold" type="checkbox"><span><b>Жирный</b></span></div>
+      <div class="checkline"><input id="globalPlainItalic" type="checkbox"><span><i>Курсив</i></span></div>
+      <div class="checkline"><input id="globalPlainUnderline" type="checkbox"><span><u>Подчёркивание</u></span></div>
+      <div class="small">Это элементы, созданные опцией «Обычный текст», например 🔻Тр-р 1.</div>
+    </div>
+
+    <div class="card" style="margin:6px 0">
+      <h3>Вводимые значения</h3>
+      <div class="formrow"><label>Размер</label><input id="styleFontSize" type="number" min="10" max="28" step="1" inputmode="numeric" value="14"></div>
+      <div class="checkline"><input id="styleBold" type="checkbox"><span><b>Жирный</b></span></div>
+      <div class="checkline"><input id="styleItalic" type="checkbox"><span><i>Курсив</i></span></div>
+      <div class="checkline"><input id="styleUnderline" type="checkbox"><span><u>Подчёркивание</u></span></div>
+    </div>
+
+    <div class="gridBtns"><button id="applyValueStyle">Применить ко всему</button><button id="resetValueStyle">По умолчанию</button></div>
+   </div><div class="card"><h3>Связи полей</h3>
+<div class="checkline"><input id="showLinkMarks" type="checkbox" checked><span>Показывать значки ↔ у связанных полей</span></div>
+<div class="gridBtns" style="margin-top:7px"><button id="openLinkMap">Показать все связи</button><button id="repairLinks">Починить связи отчёта ПС</button></div>
+<div class="small">↔ не является предупреждением или ошибкой. Нажмите на значок рядом с полем, чтобы увидеть источник и назначение связи.</div>
+</div><div class="card"><h3>Архив отчётов</h3>
+    <div class="formrow"><label>Хранить последних</label><input id="archiveLimit" type="number" min="0" max="500" step="1" inputmode="numeric" value="72"></div>
+    <div class="small">0 = архив отключён. По умолчанию хранится 72 последних отчёта.</div>
+    <div class="gridBtns" style="margin-top:7px"><button id="openArchive">Открыть архив</button><button id="clearArchive" class="danger">Очистить архив</button></div>
+   </div><div class="card"><h3>Справка</h3><div class="gridBtns"><button id="openHelp">❓ Подробная справка</button></div></div><div class="card"><h3>Безопасность</h3><div class="gridBtns">
+    <button id="saveVersion">💾 Сохранить версию</button><button id="restoreVersion">🛠 Восстановить версию</button>
+    <button id="exportBtn">Экспорт JSON</button><button id="importBtn">Импорт JSON</button>
+   </div><input id="importFile" type="file" accept=".json,application/json" hidden></div>
+   <div class="card"><h3>Структура листа</h3><div class="small">Здесь можно менять порядок, дублировать и удалять. Добавлять удобнее кнопками ＋ прямо в нужном месте.</div><div id="tree"></div></div>
+  </div>
+ </div>
+</div>
+
+<script>
+const STORE="ss13_free_builder_v7"; const ARCHIVE="ss13_report_archive_v24"; const LOGS="ss13_event_log_v26"; const TEMPLATES="ss13_templates_v26"; const NOTES="ss13_notes_final_v1"; const NOTE_BACKUPS="ss13_note_backups_final_v1";
+const VERS="ss13_free_builder_versions_v7";
+let history=[],future=[],forceSend=false,addCtx=null,multiEditCtx=null,fieldStyleCtx=null;
+
+const uid=(p="n")=>p+"_"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const clone=x=>JSON.parse(JSON.stringify(x));
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+const blankSheet=(name="Лист 1")=>({id:uid("s"),name,lastSend:null,pinned:false,children:[]});
+function load(){try{let p=JSON.parse(localStorage.getItem(STORE)||"null");if(p?.sheets?.length)return p}catch(e){}let s=blankSheet();return{active:s.id,sheets:[s]}}
+let project=load();
+if(!project.settings)project.settings={valueFontSize:14,bold:false,italic:false,underline:false};if(project.settings.showDelta===undefined)project.settings.showDelta=true;if(project.settings.archiveLimit===undefined)project.settings.archiveLimit=72;if(project.settings.reportDateTime===undefined)project.settings.reportDateTime=false;if(project.settings.workMode===undefined)project.settings.workMode=false;if(project.settings.calcColors===undefined)project.settings.calcColors=true;if(project.settings.calcGreen===undefined)project.settings.calcGreen=3;if(project.settings.calcYellow===undefined)project.settings.calcYellow=10;
+if(project.settings.validationEnabled===undefined)project.settings.validationEnabled=true;
+if(!project.settings.validation)project.settings.validation={maxDigits:3,tempWarn:15,tempHigh:25,phaseWarn:10,phaseHigh:20,furnacePhaseWarn:25,furnacePhaseHigh:40,jumpWarn:30,powerWarn:5,powerHigh:10};
+if(project.settings.favoriteSheet===undefined)project.settings.favoriteSheet=null;
+if(project.settings.labelFontSize===undefined)project.settings.labelFontSize=11;
+if(project.settings.labelBold===undefined)project.settings.labelBold=true;
+if(project.settings.labelItalic===undefined)project.settings.labelItalic=false;
+if(project.settings.labelUnderline===undefined)project.settings.labelUnderline=false;
+if(project.settings.plainFontSize===undefined)project.settings.plainFontSize=12;
+if(project.settings.plainBold===undefined)project.settings.plainBold=false;
+if(project.settings.plainItalic===undefined)project.settings.plainItalic=false;
+if(project.settings.plainUnderline===undefined)project.settings.plainUnderline=false;
+if(project.settings.showLinkMarks===undefined)project.settings.showLinkMarks=true;
+function save(){localStorage.setItem(STORE,JSON.stringify(project));markSaving();idbSet("project",project).catch(()=>{})}
+function sheet(){return project.sheets.find(s=>s.id===project.active)||project.sheets[0]}
+
+function walkSheetNodes(nodes,out=[]){
+ for(const n of nodes||[]){out.push(n);if(n.children)walkSheetNodes(n.children,out)}
+ return out
+}
+function findObjectInSheet(sh,rx){
+ return walkSheetNodes(sh.children,[]).find(n=>n.type==="object"&&rx.test(n.title||""))
+}
+function childCurrentNodes(obj){
+ return (obj?.children||[]).filter(n=>["triple","mirror"].includes(n.type)&&/ток/i.test(n.label||""))
+}
+function migrateLinked6kVCurrents(){
+ let changed=false;
+ for(const sh of project.sheets||[]){
+   const t3=findObjectInSheet(sh,/тр[-\s]*р\s*3|трансформатор\s*3/i) ||
+            findObjectInSheet(sh,/1сш\s*110\s*кв/i);
+   const t4=findObjectInSheet(sh,/тр[-\s]*р\s*4|трансформатор\s*4/i) ||
+            findObjectInSheet(sh,/2сш\s*110\s*кв/i);
+   const in1=findObjectInSheet(sh,/ввод\s*№?\s*1/i);
+   const in2=findObjectInSheet(sh,/ввод\s*№?\s*2/i);
+
+   const t3Curr=childCurrentNodes(t3);
+   const t4Curr=childCurrentNodes(t4);
+   const src1=t3Curr.length>=2?t3Curr[1]:null;
+   const src2=t4Curr.length>=2?t4Curr[1]:null;
+
+   function replaceInputCurrent(inp,src){
+     if(!inp||!src)return;
+     const idx=(inp.children||[]).findIndex(n=>["triple","mirror"].includes(n.type)&&/ток/i.test(n.label||""));
+     if(idx<0)return;
+     const old=inp.children[idx];
+     if(old.type==="mirror"&&old.sourceId===src.id)return;
+     const m=newMirror(old.label||"Ток",src.id);
+     m.style=old.style?clone(old.style):undefined;
+     m.calcRole="I";
+     inp.children[idx]=m;
+     if(inp.calcConfig?.roles){
+       delete inp.calcConfig.roles[old.id];
+       inp.calcConfig.roles[m.id]="I";
+     }
+     changed=true;
+   }
+   replaceInputCurrent(in1,src1);
+   replaceInputCurrent(in2,src2);
+ }
+ if(changed){localStorage.setItem(STORE,JSON.stringify(project));idbSet("project",project).catch(()=>{})}
+ return changed
+}
+function snapshot(){history.push(clone(project));if(history.length>80)history.shift();future=[]}
+function change(fn){snapshot();fn();save();render()}
+function apply(p){project=clone(p);save();render()}
+
+function columnsCss(cols){
+ if(cols==="auto")return"repeat(auto-fit,minmax(150px,1fr))";
+ const n=[1,2,3].includes(+cols)?+cols:2;return`repeat(${n},minmax(0,1fr))`
+}
+function newBlock(title="Новый блок"){return{id:uid("b"),type:"block",title,before:"",after:"",color:"gray",columns:2,reportHeader:true,children:[]}}
+function newObject(title="Новый объект"){return{id:uid("o"),type:"object",title,before:"",after:"",enabled:true,showSwitch:true,reportHeader:true,children:[]}}
+function newField(type="number",label=""){return{id:uid("f"),type:"field",fieldType:type,label,value:"",report:`${label} {value}`}}
+function newTriple(label=""){return{id:uid("f"),type:"triple",label,values:{A:"",B:"",C:""},report:`${label} A{A} B{B} C{C}`}}
+function newPair(label=""){return{id:uid("f"),type:"pair",label,labels:["L","R"],values:{L:"",R:""},report:`${label} {L} {R}`}}
+function newMulti(label="",count=3,labels=[],separator=" / ",leftWrap="",rightWrap="",reportLabels=false){
+ const keys=Array.from({length:count},(_,i)=>"V"+(i+1));
+ const vals={};keys.forEach(k=>vals[k]="");
+ return{id:uid("f"),type:"multi",label,count,labels:labels.length?labels:Array(count).fill(""),separator,leftWrap,rightWrap,reportLabels,values:vals,report:""}
+}
+function newText(text=""){return{id:uid("f"),type:"text",text}}
+function newSeparator(text=""){return{id:uid("f"),type:"separator",text}}
+function newMirror(label="",sourceId=null){return{id:uid("f"),type:"mirror",label,sourceId,report:`${label} {value}`}}
+
+function findNode(id,nodes=sheet().children,parent=null){
+ for(const n of nodes){
+  if(n.id===id)return{node:n,parent,nodes};
+  if(n.children){const r=findNode(id,n.children,n);if(r)return r}
+ }
+ return null
+}
+function valueNodes(nodes=sheet().children,out=[]){
+ for(const n of nodes){
+  if(["field","triple","pair","multi"].includes(n.type))out.push(n);
+  if(n.children)valueNodes(n.children,out)
+ }
+ return out
+}
+
+function renderTabs(){
+ const el=document.getElementById("tabs");el.innerHTML="";
+ project.sheets.forEach(sh=>{
+  if(sh.pinned===undefined)sh.pinned=false;
+  const b=document.createElement("button");
+  b.className="tab"+(sh.id===project.active?" active":"")+(sh.id===project.settings?.favoriteSheet?" favTab":"")+(sh.pinned?" pinnedTab":"");
+  b.textContent=sh.name;
+  b.title=sh.pinned?"Закреплённый лист":"Лист";
+  b.onclick=()=>{project.active=sh.id;save();render()};
+  b.ondblclick=e=>{e.preventDefault();const name=prompt("Новое название листа:",sh.name);if(name&&name.trim())change(()=>sh.name=name.trim())};
+  el.appendChild(b)
+ });
+}
+function applyProjectStyle(){
+ const st=project.settings||{valueFontSize:14,bold:false,italic:false,underline:false};
+ const root=document.documentElement;
+ root.style.setProperty("--value-font-size",`${st.valueFontSize||14}px`);
+ root.style.setProperty("--value-font-weight",st.bold?"700":"400");
+ root.style.setProperty("--value-font-style",st.italic?"italic":"normal");
+ root.style.setProperty("--value-text-decoration",st.underline?"underline":"none");
+}
+function syncStyleControls(){
+ syncFinalSettings();
+ const st=project.settings||{valueFontSize:14,bold:false,italic:false,underline:false};
+ const rdt=document.getElementById("reportDateTime");if(rdt)rdt.checked=!!project.settings?.reportDateTime;const wm=document.getElementById("workModeSetting");if(wm)wm.checked=!!project.settings?.workMode;const al=document.getElementById("archiveLimit");if(al)al.value=project.settings?.archiveLimit??72;const sd=document.getElementById("showDelta");if(sd)sd.checked=project.settings?.showDelta!==false;const fs=document.getElementById("styleFontSize"); if(fs)fs.value=st.valueFontSize||14;
+ const b=document.getElementById("styleBold"); if(b)b.checked=!!st.bold;
+ const i=document.getElementById("styleItalic"); if(i)i.checked=!!st.italic;
+ const u=document.getElementById("styleUnderline"); if(u)u.checked=!!st.underline;
+ const gls=document.getElementById("globalLabelSize");if(gls)gls.value=st.labelFontSize??11;
+ const glb=document.getElementById("globalLabelBold");if(glb)glb.checked=st.labelBold!==false;
+ const gli=document.getElementById("globalLabelItalic");if(gli)gli.checked=!!st.labelItalic;
+ const glu=document.getElementById("globalLabelUnderline");if(glu)glu.checked=!!st.labelUnderline;
+ const gps=document.getElementById("globalPlainSize");if(gps)gps.value=st.plainFontSize??12;
+ const gpb=document.getElementById("globalPlainBold");if(gpb)gpb.checked=!!st.plainBold;
+ const gpi=document.getElementById("globalPlainItalic");if(gpi)gpi.checked=!!st.plainItalic;
+ const gpu=document.getElementById("globalPlainUnderline");if(gpu)gpu.checked=!!st.plainUnderline;
+ const ps=document.getElementById("pinSheet");if(ps)ps.textContent=sheet().pinned?"📌 Снять закрепление":"📌 Закрепить лист";
+ const slm=document.getElementById("showLinkMarks");if(slm)slm.checked=project.settings?.showLinkMarks!==false;
+}
+
+
+
+// FINAL: сохранение, IndexedDB, заметки, проверка, статистика, поиск
+let pendingForceSend=false, searchHits=[], searchIx=-1;
+function markSaving(){const e=document.getElementById("saveState");if(!e)return;e.textContent="…";e.classList.add("busy");clearTimeout(window.__ssSave);window.__ssSave=setTimeout(()=>{const t=new Date().toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"});e.textContent="✓ "+t;e.classList.remove("busy");e.title="Сохранено "+t},300)}
+function idbOpen(){return new Promise((ok,no)=>{const q=indexedDB.open("SS13_FormBuilder",1);q.onupgradeneeded=()=>{const d=q.result;if(!d.objectStoreNames.contains("kv"))d.createObjectStore("kv")};q.onsuccess=()=>ok(q.result);q.onerror=()=>no(q.error)})}
+async function idbSet(k,v){const d=await idbOpen();return new Promise((ok,no)=>{const t=d.transaction("kv","readwrite");t.objectStore("kv").put(clone(v),k);t.oncomplete=ok;t.onerror=()=>no(t.error)})}
+async function idbGet(k){const d=await idbOpen();return new Promise((ok,no)=>{const q=d.transaction("kv").objectStore("kv").get(k);q.onsuccess=()=>ok(q.result);q.onerror=()=>no(q.error)})}
+async function restoreCoreFromIndexedDBIfNeeded(){try{if(localStorage.getItem(STORE))return;const p=await idbGet("project");if(p?.sheets?.length){project=p;localStorage.setItem(STORE,JSON.stringify(project));render()}}catch(e){}}
+if(navigator.storage?.persist)navigator.storage.persist().catch(()=>{});
+function valueSnapshot(){const o={};(function walk(ns){for(const n of ns||[]){if(n.type==="field")o[n.id]=n.value??"";else if(["triple","pair","multi"].includes(n.type))o[n.id]=clone(n.values||{});if(n.children)walk(n.children)}})(sheet().children);return o}
+function applyValueSnapshot(o){(function walk(ns){for(const n of ns||[]){if(o?.[n.id]!==undefined){if(n.type==="field")n.value=o[n.id];else if(["triple","pair","multi"].includes(n.type))n.values=clone(o[n.id])}if(n.children)walk(n.children)}})(sheet().children)}
+function sheetDirty(){return !!sheet().lastSentValues&&JSON.stringify(valueSnapshot())!==JSON.stringify(sheet().lastSentValues)}
+function snapshotPreviousForDelta(){(function walk(ns){for(const n of ns||[]){if(n.type==="field")n.previous={value:n.value??""};else if(["triple","pair","multi"].includes(n.type))n.previous=clone(n.values||{});if(n.children)walk(n.children)}})(sheet().children)}
+function clearCurrentValues(){(function walk(ns){for(const n of ns||[]){if(n.type==="field"&&n.fieldType!=="text")n.value="";else if(["triple","pair","multi"].includes(n.type))Object.keys(n.values||{}).forEach(k=>n.values[k]="");if(n.children)walk(n.children)}})(sheet().children)}
+function valCfg(){return project.settings.validation||{maxDigits:3,tempWarn:15,tempHigh:25,phaseWarn:10,phaseHigh:20,furnacePhaseWarn:25,furnacePhaseHigh:40,jumpWarn:30,powerWarn:5,powerHigh:10}}
+function strictNum(v){const t=String(v??"").trim();if(!t)return{empty:true};if(!/^-?\d+(?:[.,]\d+)?$/.test(t))return{err:true,raw:t};return{v:Number(t.replace(",",".")),raw:t}}
+function validateReportSmart(){const c=valCfg(),out=[],prev=sheet().lastSentValues||{};const add=(level,n,msg)=>out.push({level,id:n.id,msg});
+ (function walk(ns,parentObj=null){for(const n of ns||[]){const obj=n.type==="object"?n:parentObj;if(["field","triple","pair","multi"].includes(n.type)&&n.fieldType!=="text"){const raws=n.type==="field"?[n.value]:Object.values(n.values||{}),nums=[];raws.forEach(raw=>{const p=strictNum(raw);if(p.empty)return;if(p.err){add("error",n,`${n.label||"Поле"}: «${raw}» — неверный формат`);return}const digits=(p.raw.match(/\d/g)||[]).length;if(digits>c.maxDigits&&!/cos|кос/i.test(nodeText(n)))add("error",n,`${n.label||"Поле"}: ${p.raw} — больше ${c.maxDigits} цифр`);nums.push(p.v)});if(nums.length>=3){const mx=Math.max(...nums),mn=Math.min(...nums),av=avg(nums);if(/t°|темп/i.test(nodeText(n))){const d=mx-mn;if(d>=c.tempHigh)add("warn",n,`Температуры ${nums.join(" / ")}: разброс ${fmtC(d,1)} °C`);else if(d>=c.tempWarn)add("info",n,`Температуры: заметный разброс ${fmtC(d,1)} °C`)}if(/ток|current/i.test(nodeText(n))&&av){const u=(mx-mn)/av*100,isFurnace=/печь/i.test(obj?.title||"");const hi=isFurnace?(c.furnacePhaseHigh??40):c.phaseHigh,lo=isFurnace?(c.furnacePhaseWarn??25):c.phaseWarn;if(u>=hi)add("warn",n,`${isFurnace?"Печь: ":""}сильный перекос фазного тока: ${fmtC(u,1)}%`);else if(u>=lo)add("info",n,`${isFurnace?"Печь: ":""}перекос фазного тока: ${fmtC(u,1)}%`)}}const old=prev[n.id];if(old!==undefined){const oa=typeof old==="object"?Object.values(old):[old];raws.forEach((r,i)=>{const a=strictNum(r),b=strictNum(oa[i]);if(a.v!==undefined&&b.v!==undefined&&Math.abs(b.v)>0){const d=Math.abs(a.v-b.v)/Math.abs(b.v)*100;if(d>=c.jumpWarn)add("info",n,`Резкое изменение: ${fmtC(b.v)} → ${fmtC(a.v)} (${fmtC(d,1)}%)`)}})}}if(n.type==="object"){try{const d=universalCalc(n);if(d.Spq!==null&&d.Sshown!==null){const z=deviation(d.Spq,d.Sshown);if(z>=c.powerHigh)add("warn",n,`S по P/Q отличается от измеренного на ${fmtC(z,1)}%`);else if(z>=c.powerWarn)add("info",n,`S по P/Q отличается на ${fmtC(z,1)}%`)}}catch(e){}}if(n.children)walk(n.children,obj)}})(sheet().children,null);return out}
+function showValidation(a){const er=a.filter(x=>x.level==="error").length,wa=a.filter(x=>x.level!=="error").length;document.getElementById("validationSummary").innerHTML=`<div class="statGrid"><div class="statCard"><div class="statBig">${er}</div><div class="statLabel">ошибок</div></div><div class="statCard"><div class="statBig">${wa}</div><div class="statLabel">предупреждений</div></div></div>`;document.getElementById("validationList").innerHTML=a.map(x=>`<div class="validationItem ${x.level}"><b>${x.level==="error"?"Ошибка":x.level==="warn"?"Предупреждение":"Проверить"}</b><div>${esc(x.msg)}</div></div>`).join("");openModal("validationModal")}
+function loadNotesSync(){return loadJsonKey(NOTES,{categories:[{id:"general",name:"Общее"}],notes:[]})}
+function saveNotes(d){saveJsonKey(NOTES,d);idbSet("notes",d).catch(()=>{});const b=loadJsonKey(NOTE_BACKUPS,[]);b.unshift({time:nowStamp(),data:clone(d)});if(b.length>10)b.length=10;saveJsonKey(NOTE_BACKUPS,b)}
+function renderNotes(){const d=loadNotesSync(),q=(document.getElementById("notesSearch")?.value||"").toLowerCase();let h="";for(const c of d.categories){const a=d.notes.filter(n=>n.cat===c.id&&(!q||`${n.title} ${n.body} ${c.name}`.toLowerCase().includes(q))).sort((x,y)=>(y.pin?1:0)-(x.pin?1:0));h+=`<div class="noteCat"><b>${esc(c.name)}</b>${a.map(n=>`<div class="noteItem ${n.pin?"pinned":""}"><div class="noteTitle">${n.pin?"⭐ ":""}${esc(n.title)}</div><div class="noteMeta">${esc(n.status||"Актуально")} · ${esc(n.updated||n.created||"")}</div><div class="noteBody">${esc(n.body)}</div><div class="rowBtns"><button data-npin="${n.id}">⭐</button><button data-nedit="${n.id}">Изменить</button><button data-nstatus="${n.id}">Статус</button><button data-ndel="${n.id}" class="danger">Удалить</button></div></div>`).join("")}</div>`}document.getElementById("notesBody").innerHTML=h||'<div class="small">Ничего не найдено.</div>';document.querySelectorAll("[data-npin]").forEach(b=>b.onclick=()=>{const n=d.notes.find(x=>x.id===b.dataset.npin);n.pin=!n.pin;n.updated=nowStamp();saveNotes(d);renderNotes()});document.querySelectorAll("[data-nedit]").forEach(b=>b.onclick=()=>{const n=d.notes.find(x=>x.id===b.dataset.nedit),v=prompt("Текст заметки:",n.body);if(v===null)return;n.body=v;n.updated=nowStamp();saveNotes(d);renderNotes()});document.querySelectorAll("[data-nstatus]").forEach(b=>b.onclick=()=>{const n=d.notes.find(x=>x.id===b.dataset.nstatus),v=prompt("Статус: Актуально / Устранено / Архив",n.status||"Актуально");if(!v)return;n.status=v;n.updated=nowStamp();saveNotes(d);renderNotes()});document.querySelectorAll("[data-ndel]").forEach(b=>b.onclick=()=>{if(confirm("Удалить заметку?")){d.notes=d.notes.filter(x=>x.id!==b.dataset.ndel);saveNotes(d);renderNotes()}})}
+function renderStats(){
+ const all=loadArchive(),a=all.filter(r=>!r.sheetId||r.sheetId===sheet().id),today=new Date().toLocaleDateString("ru-RU"),week=Date.now()-7*86400000;
+ const td=a.filter(x=>(x.time||"").includes(today)).length,wk=a.filter(x=>{const m=(x.time||"").match(/(\d{2})\.(\d{2})\.(\d{4})/);return m&&new Date(+m[3],+m[2]-1,+m[1]).getTime()>=week}).length;
+ let h=`<div class="statGrid"><div class="statCard"><div class="statBig">${td}</div><div class="statLabel">сегодня</div></div><div class="statCard"><div class="statBig">${wk}</div><div class="statLabel">7 дней</div></div><div class="statCard"><div class="statBig">${a.length}</div><div class="statLabel">для этого листа</div></div><div class="statCard"><div class="statBig" style="font-size:12px">${esc(a[0]?.time||"—")}</div><div class="statLabel">последний</div></div></div>`;
+ const fields=[];(function walk(ns,parent=""){for(const n of ns||[]){const name=n.title||parent;if(["field","triple","pair","multi"].includes(n.type))fields.push({n,parent,name:n.label||n.text||n.type});if(n.children)walk(n.children,n.type==="object"?(n.title||parent):parent)}})(sheet().children);
+ const cards=[];for(const f of fields){const vals=[];for(const r of a){const x=r.values?.[f.n.id];if(x===undefined)continue;const z=typeof x==="object"?Object.values(x):[x];z.forEach(v=>{const q=strictNum(v);if(q.v!==undefined)vals.push(q.v)})}if(vals.length>=2)cards.push({title:`${f.parent?f.parent+" → ":""}${f.name}`,vals})}
+ if(cards.length)h+=`<div class="statCard"><h3>По оборудованию и показателям</h3>${cards.slice(0,40).map(x=>`<div class="calcGrid"><div>${esc(x.title)}</div><div class="v">min ${fmtC(Math.min(...x.vals))} · avg ${fmtC(avg(x.vals))} · max ${fmtC(Math.max(...x.vals))}</div></div>`).join("")}</div>`;
+ h+=`<div class="statCard"><h3>Как читать статистику</h3><div class="small">Статистика строится по отправленным отчётам из архива. Для новых показателей данные появятся после нескольких отправок. Архив также используется для сравнения с последним отчётом.</div></div>`;
+ document.getElementById("statsBody").innerHTML=h
+}
+function helpHtml(){return `<div class="helpCard"><h3>SS13 Form Builder FINAL v9</h3><p>Локальный конструктор оперативных отчётов, разработанный совместно с ChatGPT. Основная задача — быстро заполнить, проверить и отправить отчёт.</p></div><div class="helpCard"><h3>Хранение данных</h3><p>GitHub будет хранить код приложения и встроенные шаблоны. Ваши значения, пользовательские листы, архив, заметки и настройки автоматически в GitHub не отправляются. Приложение сохраняет рабочее состояние локально и дополнительно зеркалит его в IndexedDB. Заметки также дублируются в IndexedDB.</p></div><div class="helpCard"><h3>IndexedDB и сброс телефона</h3><p>IndexedDB — локальная база на устройстве. Закрытие приложения и перезагрузка телефона её не стирают. Но очистка данных сайта/PWA или заводской сброс телефона удалят локальные данные. Поэтому для защиты от сброса нужна внешняя резервная копия файла.</p></div><div class="helpCard"><h3>Резервная копия</h3><p>Полная копия включает листы, настройки, архив, шаблоны, журнал и записную книжку. Чтобы копия пережила заводской сброс, храните файл вне стираемой памяти телефона.</p></div><div class="helpCard"><h3>Проверка перед отправкой</h3><p>Проверяются формат чисел, число цифр, температурный разброс, перекос фазного тока, скачки к прошлому отчёту и согласованность S с P/Q. Все пороги редактируются и возвращаются кнопкой «По умолчанию». Проверку можно отключить полностью. Красная кнопка «Всё равно отправить» нужна для реального необычного режима.</p></div><div class="helpCard"><h3>Контроль расчётов</h3><p>🧮 работает по назначенным ролям P, Q, S, cosφ, ток и линейное напряжение. Это оперативная проверка, а не замена терминалу учёта/защиты.</p></div><div class="helpCard"><h3>Записная книжка</h3><p>📝 поддерживает категории, поиск, закрепление и статусы «Актуально / Устранено / Архив». Внутри хранится несколько последних копий заметок.</p></div><div class="helpCard"><h3>Рабочий режим</h3><p>🔒 скрывает элементы конструктора и блокирует редактирование подписей, но оставляет доступными поля показаний.</p></div><div class="helpCard"><h3>Шаблоны и коллеги</h3><p>Коллеге GitHub не нужен. После публикации он открывает обычную ссылку. Экспорт шаблона передаёт структуру без ваших заметок и истории.</p></div><div class="helpCard"><h3>Поиск и сворачивание</h3><p>🔎 ищет названия оборудования и полей на текущем листе. Стрелка у карточки оборудования сворачивает/разворачивает её, состояние сохраняется.</p></div><div class="helpCard"><h3>Последний отправленный отчёт</h3><p>После успешной отправки приложение фиксирует значения. Команда «Вернуть последний отправленный» восстанавливает только показания, если текущий черновик был испорчен. Оранжевый индикатор «изменён» означает, что текущие данные отличаются от последней отправки.</p></div><div class="helpCard"><h3>Архив, журнал и статистика</h3><p>Архив хранит заданное количество последних отправленных текстов и структурированных значений. Журнал фиксирует события приложения. 📊 показывает количество отчётов и min/avg/max по показателям оборудования, когда накоплена история.</p></div><div class="helpCard"><h3>Стартовый лист</h3><p>Любой лист можно отметить ⭐ стартовым — он будет открываться первым при следующем запуске.</p></div><div class="helpCard"><h3>Обновления</h3><p>После публикации приложение можно обновлять на GitHub по тому же адресу. Перед крупным обновлением рекомендуется создать полную резервную копию.</p></div>`}
+function syncFinalSettings(){const v=valCfg();const ve=document.getElementById("validationEnabled");if(ve)ve.checked=project.settings.validationEnabled!==false;for(const [id,k] of [["vMaxDigits","maxDigits"],["vTempWarn","tempWarn"],["vTempHigh","tempHigh"],["vPhaseWarn","phaseWarn"],["vPhaseHigh","phaseHigh"],["vFurnacePhaseWarn","furnacePhaseWarn"],["vFurnacePhaseHigh","furnacePhaseHigh"],["vJumpWarn","jumpWarn"],["vPowerWarn","powerWarn"],["vPowerHigh","powerHigh"]]){const e=document.getElementById(id);if(e)e.value=v[k]}}
+function calcNum(v){
+ if(v===undefined||v===null)return null;
+ const s=String(v).trim().replace(",",".");
+ const m=s.match(/-?\d+(?:\.\d+)?/); if(!m)return null;
+ const n=Number(m[0]); return Number.isFinite(n)?n:null
+}
+function calcVals(node){
+ if(!node)return [];
+ if(node.type==="field")return [calcNum(node.value)].filter(v=>v!==null);
+ if(["triple","pair","multi"].includes(node.type))return Object.values(node.values||{}).map(calcNum).filter(v=>v!==null);
+ if(node.type==="mirror"){const t=resolveMirror(node);return (t.match(/-?\d+(?:[.,]\d+)?/g)||[]).map(calcNum).filter(v=>v!==null)}
+ return []
+}
+function avg(a){return a.length?a.reduce((x,y)=>x+y,0)/a.length:null}
+function fmtC(v,d=2){return v===null||!Number.isFinite(v)?"—":String(Math.round(v*10**d)/10**d).replace(".",",")}
+function descendants(n,out=[]){for(const c of(n.children||[])){out.push(c);descendants(c,out)}return out}
+function allObjects(nodes=sheet().children,out=[]){for(const n of nodes){if(n.type==="object")out.push(n);if(n.children)allObjects(n.children,out)}return out}
+function nodeText(n){return `${n?.title||""} ${n?.label||""} ${n?.text||""} ${(n?.labels||[]).join(" ")}`.toLowerCase()}
+function calcCandidate(n){return ["field","triple","pair","multi","mirror"].includes(n.type)}
+function autoRole(n){
+ const t=nodeText(n);
+ if(/\b(mw|мвт)\b|активн/.test(t))return"P";
+ if(/mvar|мвар|реактив/.test(t))return"Q";
+ if(/\b(mva|мва)\b|полная\s*мощ/.test(t))return"S";
+ if(/cos|кос|коэф.*мощ/.test(t))return"C";
+ if(/ток|current|\bi\b/.test(t))return"I";
+ if(/u\s*лин|линейн.*напр|напряж.*ab|ab.*bc.*ca|line.*voltage/.test(t))return"U";
+ return"none"
+}
+function effectiveRole(obj,n){
+ const r=obj.calcConfig?.roles?.[n.id]||"auto";
+ return r==="auto"?autoRole(n):r
+}
+function objConfig(o){
+ if(!o.calcConfig)o.calcConfig={enabled:true,nominalVoltages:"",roles:{}};
+ if(o.calcConfig.enabled===undefined)o.calcConfig.enabled=true;
+ if(!o.calcConfig.roles)o.calcConfig.roles={};
+ return o.calcConfig
+}
+function calculableObjects(){
+ return allObjects().filter(o=>{
+  const c=objConfig(o); if(c.enabled===false)return false;
+  return descendants(o,[]).some(n=>calcCandidate(n)&&effectiveRole(o,n)!=="none")
+ })
+}
+function deviation(calc,shown){if(calc===null||shown===null||shown===0)return null;return Math.abs(calc-shown)/Math.abs(shown)*100}
+function devBadge(v){
+ if(v===null)return '<span class="calcDev neutral">—</span>';
+ if(!project.settings?.calcColors)return `<span class="calcDev neutral">${fmtC(v,1)}%</span>`;
+ const g=Number(project.settings.calcGreen??3),y=Number(project.settings.calcYellow??10),c=v<=g?"green":v<=y?"yellow":"red";
+ return `<span class="calcDev ${c}">${fmtC(v,1)}%</span>`
+}
+function metricByRole(obj,role){
+ const nodes=descendants(obj,[]).filter(calcCandidate);
+ return nodes.filter(n=>effectiveRole(obj,n)===role)
+}
+function firstScalar(nodes){
+ for(const n of nodes){const a=calcVals(n);if(a.length)return avg(a)}
+ return null
+}
+function nominalVoltages(obj){
+ return String(objConfig(obj).nominalVoltages||"").split(/[;,\s]+/).map(calcNum).filter(v=>v!==null)
+}
+function universalCalc(obj){
+ const P=firstScalar(metricByRole(obj,"P"));
+ const Q=firstScalar(metricByRole(obj,"Q"));
+ const Sshown=firstScalar(metricByRole(obj,"S"));
+ const Cshown=firstScalar(metricByRole(obj,"C"));
+ const currents=metricByRole(obj,"I");
+ const volts=metricByRole(obj,"U");
+ const noms=nominalVoltages(obj);
+ const Spq=(P!==null&&Q!==null)?Math.sqrt(P*P+Q*Q):null;
+ const Cpq=(Spq&&P!==null)?P/Spq:null;
+ const sides=currents.map((n,i)=>{
+  const I=avg(calcVals(n));
+  let U=volts[i]?avg(calcVals(volts[i])):null,source="фактическое";
+  if(U===null&&noms[i]!==undefined){U=noms[i];source="номинальное"}
+  const S=(I!==null&&U!==null)?Math.sqrt(3)*U*I/1000:null;
+  return{label:n.label||`Группа тока ${i+1}`,I,U,S,source,dev:deviation(S,Sshown)}
+ });
+ return{obj,P,Q,Sshown,Cshown,Spq,Cpq,devPQ:deviation(Spq,Sshown),cosDiff:(Cpq!==null&&Cshown!==null)?Math.abs(Cpq-Cshown):null,sides}
+}
+function universalHtml(d){
+ let h=`<div class="calcCard"><h3>${esc(d.obj.title||"Оборудование")}</h3><div class="calcGrid">
+ <div>P, МВт</div><div class="v">${fmtC(d.P)}</div>
+ <div>Q, МВАр</div><div class="v">${fmtC(d.Q)}</div>
+ <div>S измеренное, МВА</div><div class="v">${fmtC(d.Sshown)}</div>
+ <div>cosφ измеренный</div><div class="v">${fmtC(d.Cshown,3)}</div>
+ </div></div>`;
+ if(d.Spq!==null||d.Cpq!==null)h+=`<div class="calcCard"><h3>По P и Q</h3><div class="calcGrid">
+ <div>S = √(P²+Q²), МВА</div><div class="v">${fmtC(d.Spq)}</div>
+ <div>Отклонение от S измеренного</div><div class="v">${devBadge(d.devPQ)}</div>
+ <div>cosφ = P/S</div><div class="v">${fmtC(d.Cpq,3)}</div>
+ <div>|Δ cosφ|</div><div class="v">${fmtC(d.cosDiff,3)}</div>
+ </div></div>`;
+ d.sides.forEach((s,i)=>{h+=`<div class="calcCard"><h3>${esc(s.label||`Группа ${i+1}`)}</h3><div class="calcGrid">
+ <div>I средний, А</div><div class="v">${fmtC(s.I)}</div>
+ <div>U линейное, кВ</div><div class="v">${fmtC(s.U)}${s.U!==null?` <span class="small">(${esc(s.source)})</span>`:""}</div>
+ <div>S = √3·U·I, МВА</div><div class="v">${fmtC(s.S)}</div>
+ <div>Отклонение от S измеренного</div><div class="v">${devBadge(s.dev)}</div>
+ </div></div>`});
+ if(d.Spq===null&&!d.sides.length)h+=`<div class="calcCard"><div class="calcNote">Недостаточно данных для расчёта. Открой «Настройка оборудования» и назначь роли полям.</div></div>`;
+ return h
+}
+function renderCalc(activeId=null){
+ const objs=calculableObjects();
+ const tabs=document.getElementById("calcTabs"),body=document.getElementById("calcBody");
+ if(!objs.length){tabs.innerHTML="";body.innerHTML='<div class="calcCard"><div class="calcNote">Нет настроенного оборудования. Нажми «Настройка оборудования».</div></div>';return}
+ if(!activeId||!objs.some(o=>o.id===activeId))activeId=objs[0].id;
+ tabs.innerHTML=objs.map(o=>`<button class="calcTab ${o.id===activeId?"active":""}" data-calc-tab="${o.id}">${esc(o.title||"Объект")}</button>`).join("");
+ body.innerHTML=universalHtml(universalCalc(objs.find(o=>o.id===activeId)));
+ tabs.querySelectorAll("[data-calc-tab]").forEach(b=>b.onclick=()=>renderCalc(b.dataset.calcTab))
+}
+function syncCalcSettings(){
+ document.getElementById("calcColors").checked=project.settings?.calcColors!==false;
+ document.getElementById("calcGreen").value=project.settings?.calcGreen??3;
+ document.getElementById("calcYellow").value=project.settings?.calcYellow??10
+}
+let calcObjectCtx=null;
+function roleOptions(sel){
+ const opts=[["auto","Авто"],["none","Не использовать"],["P","P — активная мощность"],["Q","Q — реактивная мощность"],["S","S — полная мощность"],["C","cosφ"],["I","Ток"],["U","Линейное напряжение"]];
+ return opts.map(([v,l])=>`<option value="${v}" ${v===sel?"selected":""}>${l}</option>`).join("")
+}
+function renderCalcSetup(){
+ const box=document.getElementById("calcSetupBody"),objs=allObjects();
+ box.innerHTML=objs.length?objs.map(o=>{const c=objConfig(o);const detected=descendants(o,[]).filter(calcCandidate).map(n=>effectiveRole(o,n)).filter(r=>r!=="none").join(", ");return`<div class="calcSetupItem"><div><b>${esc(o.title||"Объект")}</b><div class="small">${c.enabled===false?"Отключено":`Роли: ${esc(detected||"нет")}`}</div></div><button data-config-obj="${o.id}">Настроить</button></div>`}).join(""):'<div class="small">На листе нет объектов.</div>';
+ box.querySelectorAll("[data-config-obj]").forEach(b=>b.onclick=()=>openCalcObject(b.dataset.configObj))
+}
+function openCalcObject(id){
+ const o=allObjects().find(x=>x.id===id);if(!o)return;calcObjectCtx=o;const c=objConfig(o);
+ document.getElementById("calcObjectTitle").textContent="⚙️ "+(o.title||"Объект");
+ document.getElementById("coEnabled").checked=c.enabled!==false;
+ document.getElementById("coNominal").value=c.nominalVoltages||"";
+ const nodes=descendants(o,[]).filter(calcCandidate);
+ document.getElementById("coRoles").innerHTML=nodes.map(n=>{const r=c.roles[n.id]||"auto";return`<div class="calcRoleRow"><span>${esc(n.label||n.text||n.type)}</span><select data-role-node="${n.id}">${roleOptions(r)}</select></div>`}).join("")||'<div class="small">В объекте нет числовых полей.</div>';
+ openModal("calcObjectModal")
+}
+function saveCalcObject(){
+ if(!calcObjectCtx)return;const o=calcObjectCtx,c=objConfig(o);
+ c.enabled=document.getElementById("coEnabled").checked;c.nominalVoltages=document.getElementById("coNominal").value.trim();
+ c.roles={};document.querySelectorAll("[data-role-node]").forEach(s=>c.roles[s.dataset.roleNode]=s.value);
+ save();calcObjectCtx=null;closeModal("calcObjectModal");renderCalcSetup();renderCalc()
+}
+function nowStamp(){
+ return new Date().toLocaleString("ru-RU",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit",second:"2-digit"})
+}
+function loadJsonKey(key,fallback=[]){try{return JSON.parse(localStorage.getItem(key)||"null")??fallback}catch(e){return fallback}}
+function saveJsonKey(key,val){localStorage.setItem(key,JSON.stringify(val))}
+function addLog(type,textValue,sheetName=sheet().name){
+ const arr=loadJsonKey(LOGS,[]);
+ arr.unshift({id:uid("log"),time:nowStamp(),type,text:textValue,sheetName});
+ if(arr.length>1000)arr.length=1000;
+ saveJsonKey(LOGS,arr)
+}
+function applyWorkMode(){
+ document.body.classList.toggle("workMode",!!project.settings?.workMode);
+ const b=document.getElementById("workModeBtn");
+ if(b){b.textContent=project.settings?.workMode?"🔒":"🔓";b.title=project.settings?.workMode?"Рабочий режим включён":"Рабочий режим выключен"}
+}
+function render(){ 
+ applyProjectStyle();
+ applyWorkMode();
+ renderTabs();const s=sheet();
+ document.getElementById("sheetTitle").textContent=s.name;
+ document.getElementById("sheetMeta").textContent="Последняя отправка: "+(s.lastSend||"—")+(sheetDirty()?" · ● изменён":"");
+ const c=document.getElementById("canvas");
+ c.innerHTML=s.children.length?s.children.map(n=>nodeHtml(n,"sheet")).join(""):`<div class="empty">Лист пуст.<br>Нажми <b>＋ На лист</b> и добавь что угодно.</div>`;
+ bindCanvas();
+}
+
+
+function num(v){
+ if(v===undefined||v===null||v==="")return null;
+ const s=String(v).trim().replace(",",".");
+ if(!/^-?\d+(?:\.\d+)?$/.test(s))return null;
+ const x=Number(s);return Number.isFinite(x)?x:null
+}
+function fmtDelta(x){
+ const a=Math.abs(x);
+ return String(Math.round(a*100)/100).replace(".",",")
+}
+function deltaHtml(n,key="value"){
+ if(!project.settings?.showDelta)return "";
+ const cur=key==="value"?n.value:n.values?.[key];
+ const prev=n.previous?.[key];
+ const a=num(cur),b=num(prev);
+ if(a===null||b===null)return "";
+ const d=a-b;if(Math.abs(d)<1e-9)return "";
+ return `<span class="delta ${d>0?"up":"down"}">${d>0?"↑":"↓"}${fmtDelta(d)}</span>`
+}
+function snapshotNode(n){
+ if(["field","mirror"].includes(n.type))n.previous={value:n.value??""};
+ else if(["triple","pair","multi"].includes(n.type))n.previous={...(n.values||{})};
+ (n.children||[]).forEach(snapshotNode)
+}
+function snapshotCurrent(){
+ const s=sheet();(s.nodes||[]).forEach(snapshotNode);save();render()
+}
+function valueStyle(n){
+ const s=n.style||{};
+ const fs=s.valueFontSize||project.settings?.valueFontSize||14;
+ const fw=s.valueBold!==undefined?(s.valueBold?"700":"400"):(project.settings?.bold?"700":"400");
+ const fi=s.valueItalic!==undefined?(s.valueItalic?"italic":"normal"):(project.settings?.italic?"italic":"normal");
+ const td=s.valueUnderline!==undefined?(s.valueUnderline?"underline":"none"):(project.settings?.underline?"underline":"none");
+ return `font-size:${fs}px!important;font-weight:${fw}!important;font-style:${fi}!important;text-decoration:${td}!important`;
+}
+function labelStyle(n){
+ const x=n.style||{},g=project.settings||{};
+ const fs=x.labelFontSize!==undefined?x.labelFontSize:(g.labelFontSize??11);
+ const fw=x.labelBold!==undefined?(x.labelBold?"700":"400"):(g.labelBold===false?"400":"700");
+ const fi=x.labelItalic!==undefined?(x.labelItalic?"italic":"normal"):(g.labelItalic?"italic":"normal");
+ const td=x.labelUnderline!==undefined?(x.labelUnderline?"underline":"none"):(g.labelUnderline?"underline":"none");
+ return `--label-fs:${fs}px;--label-fw:${fw};--label-fi:${fi};text-decoration:${td}`;
+}
+function plainTextStyle(n){
+ const x=n.style||{},g=project.settings||{};
+ const fs=x.labelFontSize!==undefined?x.labelFontSize:(g.plainFontSize??12);
+ const fw=x.labelBold!==undefined?(x.labelBold?"700":"400"):(g.plainBold?"700":"400");
+ const fi=x.labelItalic!==undefined?(x.labelItalic?"italic":"normal"):(g.plainItalic?"italic":"normal");
+ const td=x.labelUnderline!==undefined?(x.labelUnderline?"underline":"none"):(g.plainUnderline?"underline":"none");
+ return `font-size:${fs}px;font-weight:${fw};font-style:${fi};text-decoration:${td}`;
+}
+
+function nodePathById(id){
+ const parts=[];
+ function walk(nodes,path=[]){
+  for(const n of nodes||[]){
+   const here=[...path, n.type==="object"?(n.title||"Объект"):n.type==="block"?(n.title||"Блок"):(n.label||n.text||n.type)];
+   if(n.id===id){parts.push(...here.filter(Boolean));return true}
+   if(n.children&&walk(n.children,here.filter(Boolean)))return true
+  }
+  return false
+ }
+ walk(sheet().children,[]);
+ return parts.join(" → ")
+}
+function mirrorRefs(){
+ const refs=[];
+ (function walk(nodes){
+  for(const n of nodes||[]){
+   if(n.type==="mirror"&&n.sourceId)refs.push({mirror:n,sourceId:n.sourceId});
+   if(n.children)walk(n.children)
+  }
+ })(sheet().children);
+ return refs
+}
+function linkInfoForNode(id){
+ const refs=mirrorRefs();
+ const incoming=refs.filter(r=>r.mirror.id===id);
+ const outgoing=refs.filter(r=>r.sourceId===id);
+ return {incoming,outgoing}
+}
+function hasLinkForNode(id){
+ const x=linkInfoForNode(id);return x.incoming.length||x.outgoing.length
+}
+function linkMarkHtml(id){
+ if(project.settings?.showLinkMarks===false||!hasLinkForNode(id))return "";
+ return `<button class="linkMark" type="button" data-link-info="${id}" title="Показать связи поля">↔</button>`
+}
+function renderLinkInfo(id){
+ const box=document.getElementById("linkInfoBody"),info=linkInfoForNode(id);
+ const rows=[];
+ info.incoming.forEach(r=>rows.push(`<div class="linkMapRow"><b>Получает значение из:</b><br>${esc(nodePathById(r.sourceId))}</div>`));
+ info.outgoing.forEach(r=>rows.push(`<div class="linkMapRow"><b>Передаёт значение в:</b><br>${esc(nodePathById(r.mirror.id))}</div>`));
+ box.innerHTML=rows.join("")||'<div class="small">Связей не найдено.</div>';
+}
+function renderLinkMap(){
+ const refs=mirrorRefs(),box=document.getElementById("linkMapBody");
+ box.innerHTML=refs.length?refs.map(r=>`<div class="linkMapRow"><b>${esc(nodePathById(r.sourceId))}</b><br>↔ ${esc(nodePathById(r.mirror.id))}</div>`).join(""):'<div class="small">На текущем листе связанных полей нет.</div>';
+}
+function closeLinkPopover(){
+ document.getElementById("linkPopover")?.remove();
+}
+function openLinkPopover(btn,id){
+ closeLinkPopover();
+ const info=linkInfoForNode(id),rows=[];
+ info.incoming.forEach(r=>rows.push(`<div class="linkPopoverRow"><b>Источник:</b> ${esc(nodePathById(r.sourceId))}</div>`));
+ info.outgoing.forEach(r=>rows.push(`<div class="linkPopoverRow"><b>Связано с:</b> ${esc(nodePathById(r.mirror.id))}</div>`));
+ if(!rows.length)rows.push(`<div class="linkPopoverRow">Связь не найдена.</div>`);
+ const p=document.createElement("div");p.id="linkPopover";p.className="linkPopover";
+ p.innerHTML=`<div class="linkPopoverTitle">↔ Связь поля</div>${rows.join("")}`;
+ document.body.appendChild(p);
+ const r=btn.getBoundingClientRect(),w=p.offsetWidth,h=p.offsetHeight;
+ let left=Math.min(Math.max(8,r.left),window.innerWidth-w-8);
+ let top=r.bottom+8;
+ if(top+h>window.innerHeight-8)top=Math.max(8,r.top-h-8);
+ p.style.left=left+"px";p.style.top=top+"px";
+ setTimeout(()=>document.addEventListener("pointerdown",linkPopoverOutside,{once:true}),80)
+}
+function linkPopoverOutside(e){
+ const p=document.getElementById("linkPopover");
+ if(!p)return;
+ if(!p.contains(e.target)&&!e.target.closest?.("[data-link-info]"))closeLinkPopover();
+}
+function nodeHtml(n,parentType){
+ if(n.type==="block"){
+  return `<section class="block ${n.color||"gray"} node" data-node="${n.id}">
+   <div class="blockHead">
+    <div class="headText">
+     <div class="inlineEdit" contenteditable="true" data-inline="${n.id}" data-prop="title">${esc(n.title)}</div>
+    </div>
+    <div class="blockTools"><button class="mini ${(n.before||n.after)?"hasFrame":""}" data-headlines="${n.id}" title="${(n.before||n.after)?"Есть строки сверху/снизу":"Добавить строки сверху/снизу"}">☰</button><button class="mini" data-add-target="${n.id}">＋</button></div>
+   </div>
+   <div class="blockBody"><div class="childGrid" style="grid-template-columns:${columnsCss(n.columns)}">${(n.children||[]).map(x=>nodeHtml(x,"block")).join("")}</div></div>
+  </section>`
+ }
+ if(n.type==="object"){
+  return `<div class="object node ${n.collapsed?"objCollapsed ":""}${n.enabled===false?"off":""}" data-node="${n.id}">
+   <div class="objHead"><button class="collapser" data-collapse-obj="${n.id}" title="Свернуть/развернуть">${n.collapsed?"▸":"▾"}</button>
+    <div class="headText">
+     <h3 class="inlineEdit" contenteditable="true" data-inline="${n.id}" data-prop="title">${esc(n.title)}</h3>
+    </div>
+    <div class="objTools">
+     ${n.showSwitch!==false?`<label class="switch"><input type="checkbox" data-toggle="${n.id}" ${n.enabled!==false?"checked":""}><span class="slider"></span></label>`:""}
+     <button class="mini ${(n.before||n.after)?"hasFrame":""}" data-headlines="${n.id}" title="${(n.before||n.after)?"Есть строки сверху/снизу":"Добавить строки сверху/снизу"}">☰</button><button class="mini" data-add-target="${n.id}">＋</button>
+    </div>
+   </div>
+   <div class="objContent">${(n.children||[]).map(x=>nodeHtml(x,"object")).join("")}</div>
+  </div>`
+ }
+ const wrap=parentType==="block"?'directItem node':'node';
+ if(n.type==="text")return`<div class="${wrap} textline inlineEdit" style="${plainTextStyle(n)}" contenteditable="true" data-inline="${n.id}" data-prop="text" data-node="${n.id}">${esc(n.text)}</div>`;
+ if(n.type==="separator")return`<div class="${wrap} sepLine inlineEdit" style="${plainTextStyle(n)}" contenteditable="true" data-inline="${n.id}" data-prop="text" data-node="${n.id}">${esc(n.text)}</div>`;
+ if(n.type==="triple")return`<div class="${wrap}" data-node="${n.id}"><div class="row tripleRow"><div class="lab fieldLabel inlineEdit" style="${labelStyle(n)}" contenteditable="true" data-inline="${n.id}" data-prop="label">${esc(n.label)}${linkMarkHtml(n.id)}</div><div class="triple">${["A","B","C"].map(k=>`<div class="ph">${k}<input class="val" style="${valueStyle(n)}" data-value="${n.id}" data-key="${k}" value="${esc(n.values?.[k]||"")}">${deltaHtml(n,k)}</div>`).join("")}</div></div></div>`;
+ if(n.type==="pair")return`<div class="${wrap}" data-node="${n.id}"><div class="row"><div class="lab fieldLabel inlineEdit" style="${labelStyle(n)}" contenteditable="true" data-inline="${n.id}" data-prop="label">${esc(n.label)}${linkMarkHtml(n.id)}</div><div class="pair"><input class="val" style="${valueStyle(n)}" data-value="${n.id}" data-key="L" value="${esc(n.values?.L||"")}">${deltaHtml(n,"L")}<input class="val" style="${valueStyle(n)}" data-value="${n.id}" data-key="R" value="${esc(n.values?.R||"")}">${deltaHtml(n,"R")}</div></div></div>`;
+ if(n.type==="multi"){
+  const cols=Math.max(1,Math.min(6,n.count||3)),hasGroup=!!String(n.label||"").trim();
+  return`<div class="${wrap}" data-node="${n.id}"><div class="row ${hasGroup?"":"noLead"}">${hasGroup?`<div class="lab fieldLabel inlineEdit" style="${labelStyle(n)}" contenteditable="true" data-inline="${n.id}" data-prop="label">${esc(n.label)}${linkMarkHtml(n.id)}</div>`:""}<div class="multi" style="grid-template-columns:repeat(${cols},1fr)">${Array.from({length:cols},(_,i)=>{const k="V"+(i+1),lbl=n.labels?.[i]||"";return`<div class="multiCell ${lbl?"":"noLabel"}">${lbl?`<span>${esc(lbl)}</span>`:""}<input class="val" style="${valueStyle(n)}" data-value="${n.id}" data-key="${k}" value="${esc(n.values?.[k]||"")}">${deltaHtml(n,k)}</div>`}).join("")}</div></div></div>`
+ }
+ if(n.type==="mirror"){
+  const src=findNode(n.sourceId)?.node;
+  if(src?.type==="triple")return`<div class="${wrap}" data-node="${n.id}"><div class="row tripleRow"><div class="lab fieldLabel inlineEdit" style="${labelStyle(n)}" contenteditable="true" data-inline="${n.id}" data-prop="label">${esc(n.label)}${linkMarkHtml(n.id)}</div><div class="triple">${["A","B","C"].map(k=>`<div class="ph">${k}<input class="val" style="${valueStyle(n)}" readonly value="${esc(src.values?.[k]||"")}"></div>`).join("")}</div></div></div>`;
+  return`<div class="${wrap}" data-node="${n.id}"><div class="row"><div class="lab fieldLabel inlineEdit" style="${labelStyle(n)}" contenteditable="true" data-inline="${n.id}" data-prop="label">${esc(n.label)}${linkMarkHtml(n.id)}</div><div class="control"><input class="val" style="${valueStyle(n)}" readonly value="${esc(resolveMirror(n))}"></div></div></div>`
+ }
+ return`<div class="${wrap}" data-node="${n.id}"><div class="row"><div class="lab fieldLabel inlineEdit" style="${labelStyle(n)}" contenteditable="true" data-inline="${n.id}" data-prop="label">${esc(n.label)}${linkMarkHtml(n.id)}</div><div class="control"><input class="val" style="${valueStyle(n)}" ${n.fieldType==="text"?'inputmode="text"':'inputmode="decimal"'} data-value="${n.id}" value="${esc(n.value||"")}">${deltaHtml(n,"value")}</div></div></div>`
+}
+function bindCanvas(){
+ /* link marker clicks are handled by one delegated listener below */
+ document.querySelectorAll("[data-collapse-obj]").forEach(b=>b.onclick=e=>{e.stopPropagation();const r=findNode(b.dataset.collapseObj);if(r){r.node.collapsed=!r.node.collapsed;save();render()}});
+ const locked=!!project.settings?.workMode;
+ document.querySelectorAll("[data-inline]").forEach(el=>{
+  el.setAttribute("contenteditable",locked?"false":"true");
+  el.tabIndex=locked?-1:0;
+ });
+ document.querySelectorAll("[data-add-target]").forEach(b=>b.onclick=e=>{if(locked)return;e.stopPropagation();openAdd(b.dataset.addTarget)});
+ document.querySelectorAll("[data-headlines]").forEach(b=>b.onclick=e=>{if(locked)return;e.stopPropagation();editHeaderLines(b.dataset.headlines)});
+ document.querySelectorAll("[data-inline]").forEach(el=>{
+  if(locked){el.onfocus=null;el.onblur=null;return}
+  el.onfocus=()=>el.dataset.before=el.innerText;
+  el.onblur=()=>{const r=findNode(el.dataset.inline);if(!r)return;const p=el.dataset.prop,v=el.innerText.trimEnd(),old=el.dataset.before??"";if(v===old)return;snapshot();future=[];r.node[p]=v;save();render()}
+ });
+ document.querySelectorAll("[data-toggle]").forEach(e=>e.onchange=()=>change(()=>findNode(e.dataset.toggle).node.enabled=e.checked));
+ document.querySelectorAll("[data-value]").forEach(e=>{
+  e.oninput=()=>{
+   const n=findNode(e.dataset.value)?.node;if(!n)return;
+   if(e.dataset.key){n.values=n.values||{};n.values[e.dataset.key]=e.value}else n.value=e.value;
+   save();validateInput(e,n)
+  };
+  e.onchange=()=>{snapshot();future=[];save()}
+ })
+}
+function isValidNumber(s){s=String(s).trim();return s===""||(/^\d+(?:[.,]\d+)?$/.test(s)&&s.replace(/[.,]/g,"").length<=3)}
+function validateInput(e,n){if(n.fieldType==="text"){e.classList.remove("invalid");return}e.classList.toggle("invalid",!isValidNumber(e.value))}
+function invalidInputs(){
+ const bad=[];
+ document.querySelectorAll("[data-value]").forEach(e=>{const n=findNode(e.dataset.value)?.node;if(n?.fieldType==="text")return;if(!isValidNumber(e.value)){e.classList.add("invalid");bad.push(e)}else e.classList.remove("invalid")});
+ return bad
+}
+
+function openModal(id){document.getElementById(id).classList.add("show")}
+function closeModal(id){document.getElementById(id).classList.remove("show")}
+document.querySelectorAll("[data-close]").forEach(b=>b.onclick=()=>closeModal(b.dataset.close));
+document.querySelectorAll(".modal").forEach(m=>m.onclick=e=>{if(e.target===m)closeModal(m.id)});
+
+function containerFor(target){
+ if(target==="sheet")return{type:"sheet",children:sheet().children,node:sheet()};
+ const r=findNode(target);if(!r)return null;
+ if(["block","object"].includes(r.node.type))return{type:r.node.type,children:r.node.children,node:r.node};
+ return null
+}
+function editHeaderLines(id){
+ const r=findNode(id);if(!r)return;
+ const a=prompt("Строка над названием:",r.node.before||"");if(a===null)return;
+ const b=prompt("Строка под названием:",r.node.after||"");if(b===null)return;
+ change(()=>{r.node.before=a;r.node.after=b})
+}
+function openAdd(target){
+ const ctx=containerFor(target);if(!ctx)return;
+ addCtx=ctx;const choices=document.getElementById("addChoices"),title=document.getElementById("addTitle"),hint=document.getElementById("addHint");
+ title.textContent=ctx.type==="sheet"?"Добавить на лист":ctx.type==="block"?`Добавить в блок «${ctx.node.title}»`:`Добавить в «${ctx.node.title}»`;
+ const defs=[
+  ["block","Цветной блок"],["object","Объект/карточка"],["number","Числовое поле"],["textField","Текстовое поле"],
+  ["triple","A / B / C"],["multi","Несколько чисел / свой разделитель"],["text","Обычный текст"],["separator","Разделитель"],["mirror","Связанное поле"]
+ ];
+ let allowed=defs;
+ if(ctx.type==="object")allowed=defs.filter(x=>!["block","object"].includes(x[0]));
+ if(ctx.type==="block")allowed=defs.filter(x=>x[0]!=="block");
+ choices.innerHTML=allowed.map(([k,l])=>`<button data-kind="${k}">${l}</button>`).join("");
+ choices.querySelectorAll("[data-kind]").forEach(b=>b.onclick=()=>{closeModal("addModal");createHere(b.dataset.kind)});
+ hint.textContent=ctx.type==="block"?"В блок можно добавлять текст и поля напрямую — объект больше не обязателен.":"Никаких номеров вводить не нужно: элемент попадёт именно сюда.";
+ openModal("addModal")
+}
+function askLabel(text="Название"){const v=prompt(text+":","");return v===null?null:v.trim()}
+function askBlockColor(current="gray"){
+ const options=[
+  ["blue","Синий"],["red","Красный"],["orange","Оранжевый"],["green","Зелёный"],["yellow","Жёлтый"],["purple","Фиолетовый"],
+  ["cyan","Голубой"],["pink","Розовый"],["teal","Бирюзовый"],["brown","Коричневый"],["slate","Серо-синий"],["gray","Серый"]
+ ];
+ const menu=options.map((x,i)=>`${i+1}. ${x[1]} (${x[0]})${x[0]===current?" ✓":""}`).join("\n");
+ const raw=prompt("Цвет блока:\n\n"+menu+"\n\nМожно ввести номер или название.",String(Math.max(1,options.findIndex(x=>x[0]===current)+1)));
+ if(raw===null)return null;
+ const n=parseInt(raw,10);if(Number.isFinite(n)&&options[n-1])return options[n-1][0];
+ const q=raw.trim().toLowerCase();
+ const hit=options.find(x=>x[0]===q||x[1].toLowerCase()===q);
+ return hit?hit[0]:current
+}
+function createHere(kind){
+ if(!addCtx)return;const arr=addCtx.children;
+ if(kind==="block"){
+  const title=askLabel("Название блока");if(title===null)return;
+  const color=askBlockColor("gray");if(color===null)return;
+  change(()=>arr.push({...newBlock(title),color}));return
+ }
+ if(kind==="object"){const t=askLabel("Название объекта");if(t===null)return;change(()=>arr.push(newObject(t)));return}
+ if(kind==="number"){const l=askLabel("Название числового поля");if(l===null)return;change(()=>arr.push(newField("number",l)));return}
+ if(kind==="textField"){const l=askLabel("Название текстового поля");if(l===null)return;change(()=>arr.push(newField("text",l)));return}
+ if(kind==="triple"){const l=askLabel("Название группы A/B/C");if(l===null)return;change(()=>arr.push(newTriple(l)));return}
+ if(kind==="pair"){const l=askLabel("Название двойного поля");if(l===null)return;change(()=>arr.push(newPair(l)));return}
+ if(kind==="multi"){
+  openMultiEditor({mode:"create",arr});
+  return
+ }
+ if(kind==="text"){const t=prompt("Текст:","");if(t===null)return;change(()=>arr.push(newText(t)));return}
+ if(kind==="separator"){const t=prompt("Разделитель:","");if(t===null)return;change(()=>arr.push(newSeparator(t)));return}
+ if(kind==="mirror"){
+  const sources=valueNodes().filter(n=>n.type!=="mirror");
+  if(!sources.length){alert("Сначала создай поле-источник.");return}
+  const menu=sources.map((n,i)=>`${i+1}. ${n.label||n.type}${n.type==="triple"?" (A/B/C)":""}`).join("\n");
+  const idx=parseInt(prompt("Выбери источник:\n\n"+menu),10)-1;if(!sources[idx])return;
+  const l=askLabel("Название связанного поля");if(l===null)return;
+  change(()=>arr.push(newMirror(l,sources[idx].id)))
+ }
+}
+
+
+function clampMultiCount(v){
+ let n=parseInt(v,10);if(!Number.isFinite(n))n=3;return Math.max(2,Math.min(6,n))
+}
+function renderMultiLabelInputs(existing=[]){
+ const count=clampMultiCount(document.getElementById("mfCount").value),box=document.getElementById("mfLabels");
+ const prev=Array.from(box.querySelectorAll("input")).map(x=>x.value);
+ box.innerHTML=Array.from({length:count},(_,i)=>`<input class="mfLabelInput" placeholder="Подпись ${i+1}" value="${esc(prev[i]??existing[i]??"")}">`).join("")
+}
+function updateMultiEditorVisibility(){
+ const useLabels=document.getElementById("mfUseLabels").checked;
+ document.getElementById("mfLabelsWrap").classList.toggle("hidden",!useLabels);
+ document.getElementById("mfWrapFields").classList.toggle("hidden",!document.getElementById("mfWrap").checked)
+}
+function openMultiEditor(ctx){
+ multiEditCtx=ctx;
+ const n=ctx.mode==="edit"?ctx.node:null;
+ document.getElementById("multiTitle").textContent=ctx.mode==="edit"?"Настроить несколько чисел":"Добавить несколько чисел";
+ document.getElementById("mfGroup").value=n?.label||"";
+ document.getElementById("mfCount").value=n?.count||3;
+ const hasLabels=!!(n?.labels||[]).some(x=>String(x||"").trim());
+ document.getElementById("mfUseLabels").checked=hasLabels;
+ document.getElementById("mfReportLabels").checked=!!n?.reportLabels;
+ document.getElementById("mfSeparator").value=n?.separator??" / ";
+ document.getElementById("mfWrap").checked=!!((n?.leftWrap||"")||(n?.rightWrap||""));
+ document.getElementById("mfLeft").value=n?.leftWrap||"";
+ document.getElementById("mfRight").value=n?.rightWrap||"";
+ document.getElementById("mfLabels").innerHTML="";
+ renderMultiLabelInputs(n?.labels||[]);
+ updateMultiEditorVisibility();
+ openModal("multiModal")
+}
+document.getElementById("mfCount").addEventListener("input",()=>renderMultiLabelInputs());
+document.getElementById("mfUseLabels").addEventListener("change",updateMultiEditorVisibility);
+document.getElementById("mfWrap").addEventListener("change",updateMultiEditorVisibility);
+document.getElementById("mfCancel").onclick=()=>{multiEditCtx=null;closeModal("multiModal")};
+document.getElementById("mfSave").onclick=()=>{
+ if(!multiEditCtx)return;
+ const count=clampMultiCount(document.getElementById("mfCount").value);
+ const useLabels=document.getElementById("mfUseLabels").checked;
+ const labels=useLabels?Array.from(document.querySelectorAll(".mfLabelInput")).slice(0,count).map(x=>x.value):Array(count).fill("");
+ const label=document.getElementById("mfGroup").value.trim();
+ const separator=document.getElementById("mfSeparator").value;
+ const reportLabels=useLabels&&document.getElementById("mfReportLabels").checked;
+ const wrap=document.getElementById("mfWrap").checked;
+ const leftWrap=wrap?document.getElementById("mfLeft").value:"";
+ const rightWrap=wrap?document.getElementById("mfRight").value:"";
+ const ctx=multiEditCtx;
+ closeModal("multiModal");multiEditCtx=null;
+ if(ctx.mode==="create"){
+   change(()=>ctx.arr.push(newMulti(label,count,labels,separator,leftWrap,rightWrap,reportLabels)));
+ }else{
+   const n=ctx.node;
+   change(()=>{
+     n.label=label;n.count=count;n.labels=labels;n.separator=separator;n.reportLabels=reportLabels;n.leftWrap=leftWrap;n.rightWrap=rightWrap;
+     const vals={};for(let i=0;i<count;i++)vals["V"+(i+1)]=n.values?.["V"+(i+1)]||"";n.values=vals;n.report="";
+   });
+   renderTree();
+ }
+};
+
+
+function openFieldStyle(id){
+ const r=findNode(id);if(!r)return;
+ fieldStyleCtx=r.node;
+ const n=r.node,s=n.style||{},plain=["text","separator"].includes(n.type);
+ document.getElementById("fsLabelHeading").textContent=plain?"Обычный текст":"Название поля";
+ document.getElementById("fsValueCard").classList.toggle("hidden",plain);
+ document.getElementById("fsLabelSize").value=s.labelFontSize||(plain?12:11);
+ document.getElementById("fsLabelBold").checked=s.labelBold===true;
+ document.getElementById("fsLabelItalic").checked=s.labelItalic===true;
+ document.getElementById("fsLabelUnderline").checked=s.labelUnderline===true;
+ document.getElementById("fsValueSize").value=s.valueFontSize||project.settings?.valueFontSize||14;
+ document.getElementById("fsValueBold").checked=s.valueBold!==undefined?s.valueBold:!!project.settings?.bold;
+ document.getElementById("fsValueItalic").checked=s.valueItalic!==undefined?s.valueItalic:!!project.settings?.italic;
+ document.getElementById("fsValueUnderline").checked=s.valueUnderline!==undefined?s.valueUnderline:!!project.settings?.underline;
+ openModal("fieldStyleModal")
+}
+document.getElementById("fsSave").onclick=()=>{
+ if(!fieldStyleCtx)return;
+ const n=fieldStyleCtx;
+ const plain=["text","separator"].includes(n.type);
+ const st={
+  labelFontSize:Math.max(8,Math.min(28,parseInt(document.getElementById("fsLabelSize").value,10)||(plain?12:11))),
+  labelBold:document.getElementById("fsLabelBold").checked,
+  labelItalic:document.getElementById("fsLabelItalic").checked,
+  labelUnderline:document.getElementById("fsLabelUnderline").checked
+ };
+ if(!plain){
+  st.valueFontSize=Math.max(10,Math.min(30,parseInt(document.getElementById("fsValueSize").value,10)||14));
+  st.valueBold=document.getElementById("fsValueBold").checked;
+  st.valueItalic=document.getElementById("fsValueItalic").checked;
+  st.valueUnderline=document.getElementById("fsValueUnderline").checked;
+ }
+ closeModal("fieldStyleModal");
+ change(()=>{n.style=st});
+ fieldStyleCtx=null
+};
+document.getElementById("fsReset").onclick=()=>{
+ if(!fieldStyleCtx)return;
+ const n=fieldStyleCtx;closeModal("fieldStyleModal");
+ change(()=>{delete n.style});
+ fieldStyleCtx=null
+};
+
+function resolveMirror(n){
+ const src=findNode(n.sourceId)?.node;if(!src)return"";
+ if(src.type==="triple")return["A","B","C"].map(k=>src.values?.[k]||"").join(" / ");
+ if(src.type==="pair")return[src.values?.L||"",src.values?.R||""].join(" / ");
+ if(src.type==="multi")return Array.from({length:src.count||3},(_,i)=>src.values?.["V"+(i+1)]||"").join(" / ");
+ return src.value||""
+}
+function fmt(t,c){return String(t||"").replace(/\{(value|A|B|C|L|R|V1|V2|V3|V4|V5|V6)\}/g,(_,k)=>c[k]??"")}
+function reportLines(nodes,out=[]){
+ for(const n of nodes){
+  if(n.type==="block"){if(n.reportHeader!==false){if(n.before)out.push(n.before);out.push(n.title);if(n.after)out.push(n.after)}reportLines(n.children||[],out);continue}
+  if(n.type==="object"){if(n.enabled===false)continue;if(n.reportHeader!==false){if(n.before)out.push(n.before);out.push(n.title);if(n.after)out.push(n.after)}reportLines(n.children||[],out);continue}
+  if(n.type==="text"||n.type==="separator"){out.push(n.text||"");continue}
+  if(n.type==="triple"){out.push(fmt(n.report||`${n.label} A{A} B{B} C{C}`,n.values||{}));continue}
+  if(n.type==="pair"){out.push(fmt(n.report||`${n.label} {L} {R}`,n.values||{}));continue}
+  if(n.type==="multi"){
+   if(n.report){out.push(fmt(n.report,n.values||{}));continue}
+   const parts=Array.from({length:n.count||3},(_,i)=>{
+     const fieldLabel=(n.reportLabels && n.labels?.[i]) ? n.labels[i]+" " : "";
+     return `${fieldLabel}${n.leftWrap||""}${n.values?.["V"+(i+1)]||""}${n.rightWrap||""}`;
+   });
+   out.push(`${n.label}${n.label?" ":""}${parts.join(n.separator??" / ")}`);continue
+  }
+  if(n.type==="mirror"){
+   const src=findNode(n.sourceId)?.node;
+   if(src?.type==="triple"){out.push(`${n.label} A${src.values?.A||""} B${src.values?.B||""} C${src.values?.C||""}`);continue}
+   out.push(fmt(n.report||`${n.label} {value}`,{value:resolveMirror(n)}));continue
+  }
+  out.push(fmt(n.report||`${n.label} {value}`,{value:n.value||""}))
+ }
+ return out
+}
+
+function loadArchive(){
+ try{return JSON.parse(localStorage.getItem(ARCHIVE)||"[]")}catch(e){return[]}
+}
+function saveArchive(arr){
+ localStorage.setItem(ARCHIVE,JSON.stringify(arr))
+}
+function archiveCurrentReport(){
+ const limit=Math.max(0,Math.min(500,parseInt(project.settings?.archiveLimit,10)||0));
+ if(limit===0)return;
+ const arr=loadArchive();
+ arr.unshift({
+  id:uid("r"),
+  time:new Date().toLocaleString("ru-RU"),
+  sheetId:sheet().id,
+  sheetName:sheet().name,
+  text:report(),
+  values:valueSnapshot()
+ });
+ if(arr.length>limit)arr.length=limit;
+ saveArchive(arr)
+}
+function renderArchive(){
+ const box=document.getElementById("archiveList"),all=loadArchive();
+ const q=(document.getElementById("archiveSearch")?.value||"").trim().toLowerCase();
+ const arr=q?all.filter(r=>`${r.time} ${r.sheetName||""} ${r.text||""}`.toLowerCase().includes(q)):all;
+ if(!arr.length){box.innerHTML='<div class="small">Архив пока пуст.</div>';return}
+ box.innerHTML=arr.map(r=>`<div class="archiveItem">
+   <div class="archiveTop"><div><div class="archiveTime">${esc(r.time)}</div><div class="archiveSheet">${esc(r.sheetName||"")}</div></div>
+   <div class="archiveBtns"><button data-copy-archive="${r.id}">Копировать</button><button data-view-archive="${r.id}">Открыть</button></div></div>
+   <div class="archiveText" id="arch_${r.id}">${esc(r.text||"")}</div>
+  </div>`).join("");
+ box.querySelectorAll("[data-copy-archive]").forEach(b=>b.onclick=async()=>{const r=arr.find(x=>x.id===b.dataset.copyArchive);if(!r)return;try{await navigator.clipboard.writeText(r.text||"")}catch(e){}});
+ box.querySelectorAll("[data-view-archive]").forEach(b=>b.onclick=()=>{const r=arr.find(x=>x.id===b.dataset.viewArchive);if(!r)return;document.getElementById("reportText").value=r.text||"";openModal("previewModal")});
+}
+function trimArchiveToLimit(){
+ const limit=Math.max(0,Math.min(500,parseInt(project.settings?.archiveLimit,10)||0));
+ const arr=loadArchive();
+ if(limit===0){saveArchive([]);return}
+ if(arr.length>limit){arr.length=limit;saveArchive(arr)}
+}
+
+function report(){
+ const body=reportLines(sheet().children,[]).join("\n");
+ if(project.settings?.reportDateTime)return `Дата/время: ${nowStamp()}\n${body}`;
+ return body
+}
+function preview(){
+ const bad=invalidInputs(),w=document.getElementById("warn");
+ w.classList.toggle("show",bad.length>0);w.textContent=bad.length?`⚠️ Ошибок формата: ${bad.length}\nИсправь красные поля или нажми WhatsApp повторно для принудительной отправки.`:"";
+ document.getElementById("reportText").value=report();openModal("previewModal")
+}
+function performSend(){
+ archiveCurrentReport();
+ sheet().lastSend=nowStamp();
+ sheet().lastSentValues=valueSnapshot();
+ snapshotPreviousForDelta();
+ addLog("send","Отчёт отправлен в WhatsApp",sheet().name);
+ save();render();
+ location.href="https://wa.me/?text="+encodeURIComponent(report())
+}
+function send(){
+ if(project.settings?.validationEnabled!==false){const issues=validateReportSmart();if(issues.length){pendingForceSend=true;showValidation(issues);return}}
+ const bad=invalidInputs();if(bad.length&&!forceSend){forceSend=true;preview();return}
+ forceSend=false;performSend()
+}
+
+function treeHtml(nodes,depth=0){
+ return nodes.map(n=>`<div class="treeItem ${depth===1?"ind1":depth>=2?"ind2":""}">
+  <span>${esc(n.title||n.label||n.text||n.type)} <span class="small">(${n.type})</span></span>
+  <div class="treeBtns">${["field","triple","pair","multi","mirror","text","separator"].includes(n.type)?`<button data-style="${n.id}" title="Шрифт поля">Aa</button>`:""}<button data-edit="${n.id}">✎</button><button data-clone="${n.id}">⧉</button><button data-up="${n.id}">↑</button><button data-down="${n.id}">↓</button><button class="danger" data-del="${n.id}">×</button></div>
+ </div>${n.children?treeHtml(n.children,depth+1):""}`).join("")
+}
+function renderTree(){
+ const el=document.getElementById("tree");el.innerHTML=sheet().children.length?treeHtml(sheet().children):'<div class="small">Лист пуст.</div>';
+ ["edit","clone","up","down","del"].forEach(a=>el.querySelectorAll(`[data-${a}]`).forEach(b=>b.onclick=()=>treeAction(a,b.getAttribute(`data-${a}`))));el.querySelectorAll("[data-style]").forEach(b=>b.onclick=()=>openFieldStyle(b.dataset.style))
+}
+function regenerateIds(n){
+ const x=clone(n);x.id=uid(n.type[0]||"n");if(x.type==="mirror")x.sourceId=null;if(x.children)x.children=x.children.map(regenerateIds);return x
+}
+function treeAction(a,id){
+ const r=findNode(id);if(!r)return;
+ if(a==="edit"){editNode(r.node);return}
+ change(()=>{
+  const i=r.nodes.findIndex(x=>x.id===id);
+  if(a==="del")r.nodes.splice(i,1);
+  if(a==="up"&&i>0)[r.nodes[i-1],r.nodes[i]]=[r.nodes[i],r.nodes[i-1]];
+  if(a==="down"&&i<r.nodes.length-1)[r.nodes[i+1],r.nodes[i]]=[r.nodes[i],r.nodes[i+1]];
+  if(a==="clone")r.nodes.splice(i+1,0,regenerateIds(r.node))
+ });
+ renderTree()
+}
+function editNode(n){
+ if(n.type==="block"){
+  const title=prompt("Название блока:",n.title);if(title===null)return;
+  const color=askBlockColor(n.color||"gray");if(color===null)return;
+  const cols=prompt("Колонки: 1, 2, 3 или auto",String(n.columns||2));if(cols===null)return;
+  change(()=>{n.title=title;n.color=color;n.columns=cols});renderTree();return
+ }
+ if(n.type==="object"){
+  const title=prompt("Название объекта:",n.title);if(title===null)return;
+  const sw=confirm("Показывать переключатель ВКЛ/ВЫКЛ?\nОК = да, Отмена = нет");
+  change(()=>{n.title=title;n.showSwitch=sw});renderTree();return
+ }
+ if(n.type==="text"||n.type==="separator"){const t=prompt("Текст:",n.text);if(t!==null)change(()=>n.text=t);renderTree();return}
+ if(n.type==="multi"){
+  openMultiEditor({mode:"edit",node:n});
+  return
+ }
+ const l=prompt("Название:",n.label||"");if(l===null)return;
+ let rp=n.report||"";
+ if(confirm("Изменить расширенный формат строки в отчёте?")){const x=prompt("Формат ({value}, {A}, {B}, {C}, {L}, {R}):",rp);if(x!==null)rp=x}
+ change(()=>{n.label=l;n.report=rp});renderTree()
+}
+
+
+function renderLogs(){
+ const box=document.getElementById("logList"),all=loadJsonKey(LOGS,[]);
+ const q=(document.getElementById("logSearch")?.value||"").trim().toLowerCase();
+ const arr=q?all.filter(x=>`${x.time} ${x.sheetName||""} ${x.text||""}`.toLowerCase().includes(q)):all;
+ box.innerHTML=arr.length?arr.map(x=>`<div class="logItem"><div class="logTime">${esc(x.time)}</div><div class="archiveSheet">${esc(x.sheetName||"")}</div><div class="logText">${esc(x.text||"")}</div></div>`).join(""):'<div class="small">Журнал пуст.</div>'
+}
+
+function builtInPSReportTemplate(){
+ const sheet={id:uid("s"),name:"Отчёт ПС",lastSend:null,children:[]};
+
+ const field=(label,value="",role="auto")=>{
+  const n=newField("number",label);n.value=value;n.calcRole=role;return n
+ };
+ const textField=(label,value="")=>{
+  const n=newField("text",label);n.value=value;return n
+ };
+ const triple=(label,a="",b="",c="",role="auto")=>{
+  const n=newTriple(label);n.values={A:a,B:b,C:c};n.calcRole=role;return n
+ };
+ const multi=(label,count,labels,values,separator=" / ",reportLabels=false,role="auto")=>{
+  const n=newMulti(label,count,labels,separator,"","",reportLabels);
+  for(let i=0;i<count;i++)n.values["V"+(i+1)]=values[i]??"";
+  n.calcRole=role;return n
+ };
+ const txt=(v)=>newText(v);
+
+ const applyCalc=(obj,nominal,rolePairs)=>{
+  obj.calcConfig={enabled:true,nominalVoltages:nominal,roles:{}};
+  for(const [node,role] of rolePairs)obj.calcConfig.roles[node.id]=role;
+ };
+
+ // Header
+ const dem=textField("ДЭМ","Жемчугов А.В.");
+ dem.report="ДЭМ {value}";
+ sheet.children.push(dem);
+
+ // 220 kV
+ const b220=newBlock(""); b220.color="blue"; b220.columns=2; b220.reportHeader=false;
+
+ const t1=newObject("1СШ 220кВ");
+ t1.before="⚡ ⚡ ⚡ ⚡ ⚡ ⚡ ⚡ ⚡";
+ t1.after ="⚡ ⚡ ⚡ ⚡ ⚡ ⚡ ⚡ ⚡";
+ const t1title=txt("🔻Тр-р 1");
+ const t1temp=multi("t°",3,[],["44","41","46"]," / ",false,"none");
+ const t1bak=multi("",2,["Бак","РПН"],["5,5","6,5"]," ",true,"none");
+ const t1i1=triple("Ток","22","22","21","I");
+ const t1i2=triple("Ток","43","43","42","I");
+ const t1p=field("MW","3","P");
+ const t1q=field("MVAr","7","Q");
+ const t1s=field("MVA","8","S");
+ const t1c=field("Cos","0,42","C");
+ t1.children=[t1title,t1temp,t1bak,t1i1,t1i2,t1p,t1q,t1s,t1c];
+ applyCalc(t1,"220 110",[[t1i1,"I"],[t1i2,"I"],[t1p,"P"],[t1q,"Q"],[t1s,"S"],[t1c,"C"]]);
+
+ const t2=newObject("2СШ 220кВ");
+ t2.before="⚡ ⚡ ⚡ ⚡ ⚡ ⚡ ⚡ ⚡";
+ t2.after ="⚡ ⚡ ⚡ ⚡ ⚡ ⚡ ⚡ ⚡";
+ const t2title=txt("🔻Тр-р 2");
+ const t2temp=multi("t°",3,[],["44","42","45"]," / ",false,"none");
+ const t2bak=multi("",2,["Бак","РПН"],["5","6"]," ",true,"none");
+ const t2i1=triple("Ток","0","0","0","I");
+ const t2i2=triple("Ток","0","0","0","I");
+ const t2p=field("MW","0","P");
+ const t2q=field("MVAr","0","Q");
+ const t2s=field("MVA","0","S");
+ const t2c=field("Cos","0","C");
+ t2.children=[t2title,t2temp,t2bak,t2i1,t2i2,t2p,t2q,t2s,t2c];
+ applyCalc(t2,"220 110",[[t2i1,"I"],[t2i2,"I"],[t2p,"P"],[t2q,"Q"],[t2s,"S"],[t2c,"C"]]);
+
+ b220.children=[t1,t2];
+ sheet.children.push(b220);
+
+ // 110 kV
+ const b110=newBlock(""); b110.color="red"; b110.columns=2; b110.reportHeader=false;
+
+ const t3=newObject("1СШ 110кВ");
+ t3.before="⚡ ⚡ ⚡ ⚡ ⚡ ⚡ ⚡ ⚡";
+ t3.after ="⚡ ⚡ ⚡ ⚡ ⚡ ⚡ ⚡ ⚡";
+ const t3title=txt("🔻Тр-р 3");
+ const t3temp=multi("t°",3,[],["36","35","37"]," / ",false,"none");
+ const t3bak=multi("",2,["Бак","РПН"],["7","4"]," ",true,"none");
+ const t3i1=triple("Ток","3","3","3","I");
+ const t3i2=triple("Ток","55","55","60","I");
+ const t3p=field("MW","0,6","P");
+ const t3q=field("MVAr","","Q");
+ const t3s=field("MVA","0,6","S");
+ const t3c=field("Cos","1","C");
+ t3.children=[t3title,t3temp,t3bak,t3i1,t3i2,t3p,t3q,t3s,t3c];
+ applyCalc(t3,"110 6",[[t3i1,"I"],[t3i2,"I"],[t3p,"P"],[t3q,"Q"],[t3s,"S"],[t3c,"C"]]);
+
+ const t4=newObject("2СШ 110кВ");
+ t4.before="⚡ ⚡ ⚡ ⚡ ⚡ ⚡ ⚡ ⚡";
+ t4.after ="⚡ ⚡ ⚡ ⚡ ⚡ ⚡ ⚡ ⚡";
+ const t4title=txt("🔻Тр-р 4");
+ const t4temp=multi("t°",3,[],["37","36","38"]," / ",false,"none");
+ const t4bak=multi("",2,["Бак","РПН"],["7","5,5"]," ",true,"none");
+ const t4i1=triple("Ток","1","1","1","I");
+ const t4i2=triple("Ток","52","46","42","I");
+ const t4p=field("MW","0,4","P");
+ const t4q=field("MVAr","","Q");
+ const t4s=field("MVA","0,4","S");
+ const t4c=field("Cos","1","C");
+ t4.children=[t4title,t4temp,t4bak,t4i1,t4i2,t4p,t4q,t4s,t4c];
+ applyCalc(t4,"110 6",[[t4i1,"I"],[t4i2,"I"],[t4p,"P"],[t4q,"Q"],[t4s,"S"],[t4c,"C"]]);
+
+ b110.children=[t3,t4];
+ sheet.children.push(b110);
+
+ // Furnaces
+ const bf=newBlock(""); bf.color="orange"; bf.columns=2; bf.reportHeader=false;
+ function furnace(n,mw="",mvar="",ia="",ib="",ic="",cos=""){
+  const o=newObject(`🔥Печь ${n}`);
+  o.before="⚠️⚠️⚠️⚠️⚠️⚠️";
+  const p=field("MW",mw,"P"),q=field("MVAr",mvar,"Q"),i=triple("Ток",ia,ib,ic,"I"),c=field("Cos",cos,"C");
+  o.children=[p,q,i,c];
+  applyCalc(o,"6",[[p,"P"],[q,"Q"],[i,"I"],[c,"C"]]);
+  return o
+ }
+ bf.children=[
+  furnace(1),
+  furnace(2,"3","7","41","41","41","0,36"),
+  furnace(3),
+  furnace(4)
+ ];
+ sheet.children.push(bf);
+
+ // 6 kV
+ const b6=newBlock("📛 6 кВ"); b6.color="green"; b6.columns=2; b6.reportHeader=true;
+ b6.before="⚠️⚠️⚠️⚠️⚠️⚠️";
+
+ function feeder(title,sourceCurrent,uab,ubc,uca,ua,ub,uc){
+  const o=newObject(title);
+  const i=newMirror("Ток",sourceCurrent.id);i.calcRole="I";
+  const cap=txt("⚡ Напряжение:");
+  const ul=multi("",3,["AB","BC","CA"],[uab,ubc,uca]," ",true,"U");
+  const up=multi("",3,["A","B","C"],[ua,ub,uc]," ",true,"none");
+  o.children=[i,cap,ul,up];
+  applyCalc(o,"6",[[i,"I"],[ul,"U"],[up,"none"]]);
+  return o
+ }
+ b6.children=[
+  feeder("Ввод №1",t3i2,"6,2","6,2","6,2","3,6","3,6","3,5"),
+  feeder("Ввод №2",t4i2,"6,3","6,3","6,3","3,6","3,6","3,6")
+ ];
+ sheet.children.push(b6);
+
+ return sheet
+}
+
+function ensureBuiltInTemplate(){
+ const arr=loadJsonKey(TEMPLATES,[]);
+ const old=arr.find(t=>t.builtInKey==="ps_report_ready_v1"||t.builtInKey==="ps_report_ready_v2");
+ if(old){
+   old.name="Готовый отчёт ПС";
+   old.time="Встроенный шаблон · связанные токи 6 кВ";
+   old.builtInKey="ps_report_ready_v2";
+   old.sheet=builtInPSReportTemplate();
+ }else{
+   arr.unshift({id:uid("tpl"),name:"Готовый отчёт ПС",time:"Встроенный шаблон · связанные токи 6 кВ",builtInKey:"ps_report_ready_v2",sheet:builtInPSReportTemplate()});
+ }
+ saveJsonKey(TEMPLATES,arr);
+}
+function loadTemplates(){ensureBuiltInTemplate();return loadJsonKey(TEMPLATES,[])}
+
+function renderTemplates(){
+ const box=document.getElementById("templatesList"),arr=loadTemplates();
+ box.innerHTML=arr.length?arr.map(t=>`<div class="templateItem"><b>${esc(t.name)}</b>${t.builtInKey?' <span class="badge">встроенный</span>':""}<div class="archiveSheet">${esc(t.time||"")}</div><div class="rowBtns"><button data-use-template="${t.id}">Создать лист</button>${t.builtInKey?"":`<button data-del-template="${t.id}" class="danger">Удалить</button>`}</div></div>`).join(""):'<div class="small">Шаблонов пока нет.</div>';
+ box.querySelectorAll("[data-use-template]").forEach(b=>b.onclick=()=>{
+   const t=arr.find(x=>x.id===b.dataset.useTemplate);if(!t)return;
+   change(()=>{const s=clone(t.sheet);s.id=uid("s");s.name=t.name+" "+(project.sheets.length+1);s.lastSend=null;project.sheets.push(s);project.active=s.id});
+   
+migrateLinked6kVCurrents();
+   addLog("template","Создан лист из шаблона "+t.name,sheet().name);closeModal("templatesModal")
+ });
+ box.querySelectorAll("[data-del-template]").forEach(b=>b.onclick=()=>{
+   const t=arr.find(x=>x.id===b.dataset.delTemplate);
+   if(t?.builtInKey){alert("Встроенный шаблон нельзя удалить.");return}
+   if(confirm("Удалить шаблон?")){saveJsonKey(TEMPLATES,arr.filter(x=>x.id!==b.dataset.delTemplate));renderTemplates()}
+ })
+}
+function fullBackupData(){
+ return {
+  version:"FINAL",
+  created:nowStamp(),
+  project:clone(project),
+  versions:getVersions(),
+  archive:loadArchive(),
+  templates:loadTemplates(),
+  logs:loadJsonKey(LOGS,[]),notes:loadNotesSync(),noteBackups:loadJsonKey(NOTE_BACKUPS,[])
+ }
+}
+
+function getVersions(){try{return JSON.parse(localStorage.getItem(VERS)||"{}")}catch(e){return{}}}
+function saveVersion(){const all=getVersions(),sid=sheet().id;all[sid]=all[sid]||[];all[sid].push({time:new Date().toLocaleString("ru-RU"),sheet:clone(sheet())});if(all[sid].length>10)all[sid].shift();localStorage.setItem(VERS,JSON.stringify(all));alert("Версия листа сохранена.")}
+function restoreVersion(){
+ const all=getVersions(),vs=all[sheet().id]||[];if(!vs.length){alert("Сохранённых версий нет.");return}
+ const menu=vs.map((v,i)=>`${i+1}. ${v.time}`).join("\n");const i=parseInt(prompt("Какую версию восстановить?\n\n"+menu),10)-1;if(!vs[i])return;
+ change(()=>{const idx=project.sheets.findIndex(s=>s.id===project.active);project.sheets[idx]=clone(vs[i].sheet)});closeModal("toolsModal")
+}
+
+
+document.getElementById("validationEnabled").onchange=e=>{project.settings.validationEnabled=e.target.checked;save()};
+for(const [id,k] of [["vMaxDigits","maxDigits"],["vTempWarn","tempWarn"],["vTempHigh","tempHigh"],["vPhaseWarn","phaseWarn"],["vPhaseHigh","phaseHigh"],["vFurnacePhaseWarn","furnacePhaseWarn"],["vFurnacePhaseHigh","furnacePhaseHigh"],["vJumpWarn","jumpWarn"],["vPowerWarn","powerWarn"],["vPowerHigh","powerHigh"]])document.getElementById(id).onchange=e=>{project.settings.validation[k]=Number(e.target.value);save()};
+document.getElementById("validationDefaults").onclick=()=>{project.settings.validation={maxDigits:3,tempWarn:15,tempHigh:25,phaseWarn:10,phaseHigh:20,furnacePhaseWarn:25,furnacePhaseHigh:40,jumpWarn:30,powerWarn:5,powerHigh:10};project.settings.validationEnabled=true;save();syncFinalSettings();alert("Стандартные параметры восстановлены.")};
+document.getElementById("forceSendValidation").onclick=()=>{closeModal("validationModal");pendingForceSend=false;forceSend=false;performSend()};
+document.getElementById("restoreLastSent").onclick=()=>{if(!sheet().lastSentValues)return alert("Ещё нет сохранённого состояния последней отправки.");if(confirm("Вернуть значения на момент последней отправки?")){snapshot();applyValueSnapshot(sheet().lastSentValues);save();render()}};
+document.getElementById("clearValues").onclick=()=>{if(confirm("Очистить вводимые показания? Структура и текстовые поля останутся.")){snapshot();clearCurrentValues();save();render()}};
+document.getElementById("favoriteSheet").onclick=()=>{project.settings.favoriteSheet=sheet().id;save();render();alert("Лист назначен стартовым.")};
+document.getElementById("searchBtn").onclick=()=>{openModal("searchModal");setTimeout(()=>document.getElementById("sheetSearch").focus(),50)};
+function searchStep(dir){document.querySelectorAll(".searchHit").forEach(x=>x.classList.remove("searchHit"));const q=document.getElementById("sheetSearch").value.trim().toLowerCase();if(!q)return;searchHits=[...document.querySelectorAll("[data-inline],.objHead,.blockHead")].filter(x=>(x.innerText||"").toLowerCase().includes(q));if(!searchHits.length){document.getElementById("searchInfo").textContent="Ничего не найдено";return}searchIx=(searchIx+dir+searchHits.length)%searchHits.length;const x=searchHits[searchIx];x.classList.add("searchHit");x.scrollIntoView({behavior:"smooth",block:"center"});document.getElementById("searchInfo").textContent=`${searchIx+1} из ${searchHits.length}`}
+document.getElementById("searchNext").onclick=()=>searchStep(1);document.getElementById("searchPrev").onclick=()=>searchStep(-1);document.getElementById("sheetSearch").oninput=()=>{searchIx=-1;searchStep(1)};
+document.getElementById("notesBtn").onclick=async()=>{renderNotes();const st=document.getElementById("notesStorageState");if(st){let p="неизвестно";try{p=await navigator.storage?.persisted()?"постоянное хранилище разрешено":"локальное хранилище"}catch(e){}st.textContent="Хранение: "+p}openModal("notesModal")};document.getElementById("notesSearch").oninput=renderNotes;
+document.getElementById("restoreNotes").onclick=()=>{const b=loadJsonKey(NOTE_BACKUPS,[]);if(!b.length)return alert("Внутренних копий заметок пока нет.");const list=b.map((x,i)=>`${i+1}. ${x.time}`).join("\n"),ix=Number(prompt("Выберите копию:\n"+list,"1"))-1;if(!b[ix])return;if(confirm("Восстановить эту копию записной книжки?")){saveNotes(clone(b[ix].data));renderNotes()}};
+document.getElementById("newNoteCat").onclick=()=>{const d=loadNotesSync(),name=prompt("Название категории:");if(!name)return;d.categories.push({id:uid("cat"),name});saveNotes(d);renderNotes()};
+document.getElementById("newNote").onclick=()=>{const d=loadNotesSync(),list=d.categories.map((c,i)=>`${i+1}. ${c.name}`).join("\n"),ix=Number(prompt("Выберите категорию:\n"+list,"1"))-1;if(!d.categories[ix])return;const title=prompt("Заголовок:","Замечание");if(!title)return;const body=prompt("Текст заметки:","");if(body===null)return;d.notes.unshift({id:uid("note"),cat:d.categories[ix].id,title,body,status:"Актуально",pin:false,created:nowStamp(),updated:nowStamp()});saveNotes(d);renderNotes()};
+document.getElementById("statsBtn").onclick=()=>{renderStats();openModal("statsModal")};
+document.getElementById("openHelp").onclick=()=>{document.getElementById("toolsModal").classList.remove("show");document.getElementById("helpBody").innerHTML=helpHtml();openModal("helpModal")};
+function downloadJson(data,name){const b=new Blob([JSON.stringify(data,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+document.getElementById("exportTemplate").onclick=()=>{const sh=clone(sheet());(function wipe(ns){for(const n of ns||[]){if(n.type==="field")n.value="";if(["triple","pair","multi"].includes(n.type))Object.keys(n.values||{}).forEach(k=>n.values[k]="");if(n.children)wipe(n.children)}})(sh.children);sh.lastSend=null;sh.lastSentValues=null;downloadJson({type:"SS13_TEMPLATE",version:1,sheet:sh},`SS13_template_${sh.name}.ss13`)};
+document.getElementById("importTemplate").onclick=()=>document.getElementById("importTemplateFile").click();document.getElementById("importTemplateFile").onchange=async e=>{try{const d=JSON.parse(await e.target.files[0].text());if(d.type!=="SS13_TEMPLATE"||!d.sheet)throw 0;d.sheet.id=uid("s");project.sheets.push(d.sheet);project.active=d.sheet.id;save();render();alert("Шаблон импортирован.")}catch(x){alert("Неверный файл шаблона.")}};
+document.getElementById("exportProjectClean").onclick=()=>{const p=clone(project);p.sheets.forEach(x=>{x.lastSend=null;x.lastSentValues=null});downloadJson({type:"SS13_PROJECT",version:1,project:p},`SS13_project_${new Date().toISOString().slice(0,10)}.ss13`)};
+document.getElementById("calcBtn").onclick=()=>{syncCalcSettings();renderCalc();openModal("calcModal")};
+document.getElementById("calcEquipSettings").onclick=()=>{renderCalcSetup();openModal("calcSetupModal")};
+document.getElementById("coCancel").onclick=()=>{calcObjectCtx=null;closeModal("calcObjectModal")};
+document.getElementById("coSave").onclick=saveCalcObject;
+document.getElementById("calcColors").onchange=e=>{project.settings.calcColors=e.target.checked;save();renderCalc(document.querySelector(".calcTab.active")?.dataset.calcTab||null)};
+document.getElementById("calcGreen").onchange=e=>{project.settings.calcGreen=Math.max(0,Number(e.target.value)||3);save();renderCalc(document.querySelector(".calcTab.active")?.dataset.calcTab||null)};
+document.getElementById("calcYellow").onchange=e=>{project.settings.calcYellow=Math.max(0,Number(e.target.value)||10);save();renderCalc(document.querySelector(".calcTab.active")?.dataset.calcTab||null)};
+document.getElementById("undoBtn").onclick=()=>{if(!history.length)return;future.push(clone(project));apply(history.pop())};
+document.getElementById("redoBtn").onclick=()=>{if(!future.length)return;history.push(clone(project));apply(future.pop())};
+document.getElementById("previewBtn").onclick=()=>{forceSend=false;preview()};
+document.getElementById("waBtn").onclick=send;document.getElementById("waBtn2").onclick=send;
+document.getElementById("copyBtn").onclick=async()=>{const t=report();document.getElementById("reportText").value=t;try{await navigator.clipboard.writeText(t)}catch(e){}};
+document.getElementById("toolsBtn").onclick=()=>{renderTree();syncStyleControls();openModal("toolsModal")};
+document.getElementById("renameSheet").onclick=()=>{const n=prompt("Название листа:",sheet().name);if(n)change(()=>sheet().name=n)};
+document.getElementById("duplicateSheet").onclick=()=>change(()=>{const n=clone(sheet());n.id=uid("s");n.name=n.name+" копия";n.pinned=false;const renew=arr=>arr.map(regenerateIds);n.children=renew(n.children);project.sheets.push(n);project.active=n.id});
+document.getElementById("newSheet").onclick=()=>change(()=>{const s=blankSheet("Лист "+(project.sheets.length+1));project.sheets.push(s);project.active=s.id});
+document.getElementById("deleteSheet").onclick=()=>{
+ const sh=sheet();
+ if(sh.pinned){alert("Этот лист закреплён 📌. Сначала снимите закрепление.");return}
+ if(project.sheets.length===1){alert("Нельзя удалить единственный лист.");return}
+ if(confirm(`Удалить лист «${sh.name}»?`))change(()=>{project.sheets=project.sheets.filter(s=>s.id!==project.active);project.active=project.sheets[0].id});
+ closeModal("toolsModal")
+};
+document.getElementById("renameSheet").onclick=()=>{
+ const sh=sheet(),name=prompt("Новое название листа:",sh.name);
+ if(name&&name.trim())change(()=>{sh.name=name.trim()});
+};
+document.getElementById("pinSheet").onclick=()=>{
+ const sh=sheet();change(()=>{sh.pinned=!sh.pinned});
+ syncStyleControls();
+};
+document.getElementById("reportDateTime").onchange=e=>{change(()=>{project.settings.reportDateTime=e.target.checked})};
+document.getElementById("workModeSetting").onchange=e=>{change(()=>{project.settings.workMode=e.target.checked})};
+document.getElementById("workModeBtn").onclick=()=>{change(()=>{project.settings.workMode=!project.settings.workMode})};
+document.getElementById("openLog").onclick=()=>{document.getElementById("toolsModal").classList.remove("show");renderLogs();openModal("logModal")};
+document.getElementById("logSearch").addEventListener("input",renderLogs);
+document.getElementById("saveTemplate").onclick=()=>{
+ const name=prompt("Название шаблона:",sheet().name);if(!name)return;
+ const arr=loadTemplates();arr.unshift({id:uid("tpl"),name,time:nowStamp(),sheet:clone(sheet())});saveJsonKey(TEMPLATES,arr);
+ addLog("template","Сохранён шаблон "+name,sheet().name);alert("Шаблон сохранён.")
+};
+document.getElementById("openTemplates").onclick=()=>{document.getElementById("toolsModal").classList.remove("show");renderTemplates();openModal("templatesModal")};
+document.getElementById("backupAll").onclick=()=>{
+ const blob=new Blob([JSON.stringify(fullBackupData(),null,2)],{type:"application/json"});
+ const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="SS13_full_backup_FINAL.json";a.click();URL.revokeObjectURL(a.href);
+ addLog("backup","Создана полная резервная копия",sheet().name)
+};
+document.getElementById("restoreAll").onclick=()=>document.getElementById("restoreAllFile").click();
+document.getElementById("restoreAllFile").onchange=async e=>{
+ const f=e.target.files[0];if(!f)return;
+ try{
+  const d=JSON.parse(await f.text());if(!d.project?.sheets)throw 0;
+  if(!confirm("Полностью заменить текущие данные данными из резервной копии?"))return;
+  project=d.project;if(!project.settings)project.settings={};if(project.settings.archiveLimit===undefined)project.settings.archiveLimit=72;if(project.settings.reportDateTime===undefined)project.settings.reportDateTime=false;if(project.settings.workMode===undefined)project.settings.workMode=false;if(project.settings.calcColors===undefined)project.settings.calcColors=true;if(project.settings.calcGreen===undefined)project.settings.calcGreen=3;if(project.settings.calcYellow===undefined)project.settings.calcYellow=10;
+  save();if(d.versions)saveJsonKey(VERS,d.versions);if(d.archive)saveJsonKey(ARCHIVE,d.archive);if(d.templates)saveJsonKey(TEMPLATES,d.templates);if(d.logs)saveJsonKey(LOGS,d.logs);if(d.notes){saveJsonKey(NOTES,d.notes);idbSet("notes",d.notes).catch(()=>{})}if(d.noteBackups)saveJsonKey(NOTE_BACKUPS,d.noteBackups);
+  render();closeModal("toolsModal");alert("Резервная копия восстановлена.")
+ }catch(err){alert("Не удалось прочитать резервную копию.")}
+};
+document.getElementById("showLinkMarks").onchange=e=>{change(()=>{project.settings.showLinkMarks=e.target.checked})};
+document.getElementById("repairLinks").onclick=()=>{
+ const ok=migrateLinked6kVCurrents();
+ render();
+ alert(ok?"Связи токов 6 кВ восстановлены.":"Связи уже настроены или нужная структура не найдена.");
+};
+document.getElementById("openLinkMap").onclick=()=>{document.getElementById("toolsModal").classList.remove("show");renderLinkMap();openModal("linkMapModal")};
+document.getElementById("archiveLimit").onchange=e=>{
+ const v=Math.max(0,Math.min(500,parseInt(e.target.value,10)||0));
+ change(()=>{project.settings.archiveLimit=v});
+ trimArchiveToLimit();
+};
+document.getElementById("archiveSearch").addEventListener("input",renderArchive);
+document.getElementById("openArchive").onclick=()=>{
+ const tm=document.getElementById("toolsModal");
+ if(tm)tm.classList.remove("show");
+ renderArchive();
+ openModal("archiveModal");
+};
+document.getElementById("clearArchive").onclick=()=>{if(confirm("Очистить весь архив отчётов?")){saveArchive([]);renderArchive()}};
+document.getElementById("showDelta").onchange=e=>{change(()=>{project.settings.showDelta=e.target.checked})};
+document.getElementById("applyValueStyle").onclick=()=>{
+ const valSize=Math.max(10,Math.min(28,parseInt(document.getElementById("styleFontSize").value,10)||14));
+ const labelSize=Math.max(8,Math.min(28,parseInt(document.getElementById("globalLabelSize").value,10)||11));
+ const plainSize=Math.max(8,Math.min(28,parseInt(document.getElementById("globalPlainSize").value,10)||12));
+ change(()=>{
+   const st=project.settings||(project.settings={});
+   st.valueFontSize=valSize;st.bold=document.getElementById("styleBold").checked;st.italic=document.getElementById("styleItalic").checked;st.underline=document.getElementById("styleUnderline").checked;
+   st.labelFontSize=labelSize;st.labelBold=document.getElementById("globalLabelBold").checked;st.labelItalic=document.getElementById("globalLabelItalic").checked;st.labelUnderline=document.getElementById("globalLabelUnderline").checked;
+   st.plainFontSize=plainSize;st.plainBold=document.getElementById("globalPlainBold").checked;st.plainItalic=document.getElementById("globalPlainItalic").checked;st.plainUnderline=document.getElementById("globalPlainUnderline").checked;
+ });
+ syncStyleControls();
+};
+document.getElementById("resetValueStyle").onclick=()=>{
+ change(()=>{
+   const st=project.settings||(project.settings={});
+   st.valueFontSize=14;st.bold=false;st.italic=false;st.underline=false;
+   st.labelFontSize=11;st.labelBold=true;st.labelItalic=false;st.labelUnderline=false;
+   st.plainFontSize=12;st.plainBold=false;st.plainItalic=false;st.plainUnderline=false;
+ });
+ syncStyleControls();
+};
+document.getElementById("saveVersion").onclick=saveVersion;
+document.getElementById("restoreVersion").onclick=restoreVersion;
+document.getElementById("exportBtn").onclick=()=>{const blob=new Blob([JSON.stringify({project,versions:getVersions()},null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="SS13_FormBuilder_v7_project.json";a.click();URL.revokeObjectURL(a.href)};
+document.getElementById("importBtn").onclick=()=>document.getElementById("importFile").click();
+document.getElementById("importFile").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const d=JSON.parse(await f.text());if(!d.project?.sheets)throw 0;if(confirm("Импорт заменит текущий проект. Продолжить?")){project=d.project;if(!project.settings)project.settings={valueFontSize:14,bold:false,italic:false,underline:false};if(project.settings.showDelta===undefined)project.settings.showDelta=true;if(project.settings.archiveLimit===undefined)project.settings.archiveLimit=72;if(project.settings.reportDateTime===undefined)project.settings.reportDateTime=false;if(project.settings.workMode===undefined)project.settings.workMode=false;if(project.settings.calcColors===undefined)project.settings.calcColors=true;if(project.settings.calcGreen===undefined)project.settings.calcGreen=3;if(project.settings.calcYellow===undefined)project.settings.calcYellow=10;save();if(d.versions)localStorage.setItem(VERS,JSON.stringify(d.versions));render();closeModal("toolsModal")}}catch(err){alert("Неверный файл проекта.")}};
+
+if(!window.__ss13LinkDelegation){
+ window.__ss13LinkDelegation=true;
+ document.addEventListener("pointerup",function(e){
+   const btn=e.target.closest?.("[data-link-info]");
+   if(!btn)return;
+   e.preventDefault();
+   e.stopPropagation();
+   openLinkPopover(btn,btn.dataset.linkInfo);
+ },true);
+}
+
+migrateLinked6kVCurrents();
+try{if(project.settings?.favoriteSheet&&project.sheets.some(x=>x.id===project.settings.favoriteSheet))project.active=project.settings.favoriteSheet}catch(e){}
+render();
+restoreCoreFromIndexedDBIfNeeded();
+</script>
+
+</body>
+</html>
