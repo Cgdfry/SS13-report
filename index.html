@@ -248,7 +248,7 @@ button:active,.tab:active,[role="button"]:active{transform:scale(.96);filter:bri
 <body>
 <div class="top">
  <div class="toprow">
-  <div><div class="brand">⚡ Отчётник</div><div class="sub">Конструктор оперативных отчётов</div></div>
+  <div><div class="brand">⚡ Отчётник TEST SHARE</div><div class="sub">Конструктор оперативных отчётов</div></div>
   <div class="topBtns"><span id="saveState" class="saveState">✓</span><button id="searchBtn" title="Поиск">🔎</button><button id="notesBtn" title="Записная книжка">📝</button><button id="statsBtn" title="Статистика">📊</button><button id="undoBtn">↶</button><button id="redoBtn">↷</button><button id="calcBtn" title="Контроль расчётов">🧮</button><button id="workModeBtn" title="Рабочий режим">🔓</button><button id="toolsBtn">⚙️</button></div>
  </div>
  <div class="tabs" id="tabs"></div>
@@ -462,10 +462,10 @@ button:active,.tab:active,[role="button"]:active{transform:scale(.96);filter:bri
 <div class="gridBtns"><button id="saveTemplate">Сохранить текущий лист как шаблон</button><button id="openTemplates">Открыть шаблоны</button></div>
 </div>
 <div class="card"><h3>Полная резервная копия</h3>
-<div class="gridBtns"><button id="backupAll">Скачать резервную копию</button><button id="shareBackup">☁️ Поделиться копией</button>
-<button class="btn" id="testSystemShare" type="button" style="margin-top:8px">
+<div class="gridBtns"><button id="backupAll">Скачать резервную копию</button><button id="shareBackup">☁️ Поделиться копией</button><button id="restoreAll">Восстановить копию</button>
+<button class="btn" id="testSystemShare" type="button" style="grid-column:1 / -1">
   🧪 Тест меню «Поделиться»
-</button><button id="restoreAll">Восстановить копию</button></div>
+</button></div>
 <input id="restoreAllFile" type="file" accept=".json,.txt,application/json,text/plain" accept=".json,application/json" hidden>
 <div class="small">Сохраняются листы, настройки, версии, архив, шаблоны и журнал событий. «Поделиться копией» открывает системное меню Android — файл можно отправить в установленное облако, мессенджер или файловый менеджер.</div>
 </div><div class="card"><h3>Изменение показаний</h3>
