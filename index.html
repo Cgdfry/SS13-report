@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#174ea6">
-<title>SS13 Form Builder FINAL v9 PWA</title>
+<title>Отчётник</title>
 <style>
 *{box-sizing:border-box}
 :root{
@@ -228,14 +228,27 @@ body.workMode .linkMark{display:inline-flex!important;pointer-events:auto!import
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="SS13">
+<meta name="apple-mobile-web-app-title" content="Отчётник">
 <link rel="apple-touch-icon" href="./icon-192.png">
 
+
+<style id="uxPatchV10">
+/* UX v10: no accidental text selection on controls/tabs; tactile button feedback */
+button,.tab,.top,.bottom,.blockHead,.objHead,.collapser,.switch,[role="button"]{
+  -webkit-user-select:none!important;user-select:none!important;-webkit-touch-callout:none!important;
+}
+button,.tab,[role="button"]{touch-action:manipulation;transition:transform .07s ease,filter .07s ease,box-shadow .07s ease,opacity .07s ease}
+button:active,.tab:active,[role="button"]:active{transform:scale(.96);filter:brightness(.92);box-shadow:inset 0 1px 3px rgba(0,0,0,.18)}
+/* .warn is also used as a generic hidden preview warning; validation warnings must stay visible */
+.validationItem.warn{display:block!important;background:#fffaf0!important;border-top:1px solid var(--line);border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+.validationItem.error,.validationItem.info{display:block!important}
+#validationList:empty::after{content:"Причин не найдено";display:block;color:var(--muted);font-size:12px;padding:10px 2px}
+</style>
 </head>
 <body>
 <div class="top">
  <div class="toprow">
-  <div><div class="brand">⚡ SS13 Form Builder FINAL v9</div><div class="sub">Свободный конструктор: добавляй прямо туда, куда нужно</div></div>
+  <div><div class="brand">⚡ Отчётник</div><div class="sub">Конструктор оперативных отчётов</div></div>
   <div class="topBtns"><span id="saveState" class="saveState">✓</span><button id="searchBtn" title="Поиск">🔎</button><button id="notesBtn" title="Записная книжка">📝</button><button id="statsBtn" title="Статистика">📊</button><button id="undoBtn">↶</button><button id="redoBtn">↷</button><button id="calcBtn" title="Контроль расчётов">🧮</button><button id="workModeBtn" title="Рабочий режим">🔓</button><button id="toolsBtn">⚙️</button></div>
  </div>
  <div class="tabs" id="tabs"></div>
@@ -449,9 +462,9 @@ body.workMode .linkMark{display:inline-flex!important;pointer-events:auto!import
 <div class="gridBtns"><button id="saveTemplate">Сохранить текущий лист как шаблон</button><button id="openTemplates">Открыть шаблоны</button></div>
 </div>
 <div class="card"><h3>Полная резервная копия</h3>
-<div class="gridBtns"><button id="backupAll">Скачать резервную копию</button><button id="restoreAll">Восстановить копию</button></div>
+<div class="gridBtns"><button id="backupAll">Скачать резервную копию</button><button id="shareBackup">☁️ Поделиться копией</button><button id="restoreAll">Восстановить копию</button></div>
 <input id="restoreAllFile" type="file" accept=".json,application/json" hidden>
-<div class="small">Сохраняются листы, настройки, версии, архив, шаблоны и журнал событий.</div>
+<div class="small">Сохраняются листы, настройки, версии, архив, шаблоны и журнал событий. «Поделиться копией» открывает системное меню Android — файл можно отправить в установленное облако, мессенджер или файловый менеджер.</div>
 </div><div class="card"><h3>Изменение показаний</h3>
 <div class="checkline"><input id="showDelta" type="checkbox" checked><span>Показывать изменение относительно предыдущего отчёта</span></div>
 <div class="small">После сохранения/отправки отчёта текущие значения становятся предыдущими. В следующем отчёте рядом с изменившимся значением появится, например, ↑3, ↓0,2. Если значение не изменилось — ничего не показывается.</div>
@@ -686,7 +699,7 @@ function renderStats(){
  h+=`<div class="statCard"><h3>Как читать статистику</h3><div class="small">Статистика строится по отправленным отчётам из архива. Для новых показателей данные появятся после нескольких отправок. Архив также используется для сравнения с последним отчётом.</div></div>`;
  document.getElementById("statsBody").innerHTML=h
 }
-function helpHtml(){return `<div class="helpCard"><h3>SS13 Form Builder FINAL v9</h3><p>Локальный конструктор оперативных отчётов, разработанный совместно с ChatGPT. Основная задача — быстро заполнить, проверить и отправить отчёт.</p></div><div class="helpCard"><h3>Хранение данных</h3><p>GitHub будет хранить код приложения и встроенные шаблоны. Ваши значения, пользовательские листы, архив, заметки и настройки автоматически в GitHub не отправляются. Приложение сохраняет рабочее состояние локально и дополнительно зеркалит его в IndexedDB. Заметки также дублируются в IndexedDB.</p></div><div class="helpCard"><h3>IndexedDB и сброс телефона</h3><p>IndexedDB — локальная база на устройстве. Закрытие приложения и перезагрузка телефона её не стирают. Но очистка данных сайта/PWA или заводской сброс телефона удалят локальные данные. Поэтому для защиты от сброса нужна внешняя резервная копия файла.</p></div><div class="helpCard"><h3>Резервная копия</h3><p>Полная копия включает листы, настройки, архив, шаблоны, журнал и записную книжку. Чтобы копия пережила заводской сброс, храните файл вне стираемой памяти телефона.</p></div><div class="helpCard"><h3>Проверка перед отправкой</h3><p>Проверяются формат чисел, число цифр, температурный разброс, перекос фазного тока, скачки к прошлому отчёту и согласованность S с P/Q. Все пороги редактируются и возвращаются кнопкой «По умолчанию». Проверку можно отключить полностью. Красная кнопка «Всё равно отправить» нужна для реального необычного режима.</p></div><div class="helpCard"><h3>Контроль расчётов</h3><p>🧮 работает по назначенным ролям P, Q, S, cosφ, ток и линейное напряжение. Это оперативная проверка, а не замена терминалу учёта/защиты.</p></div><div class="helpCard"><h3>Записная книжка</h3><p>📝 поддерживает категории, поиск, закрепление и статусы «Актуально / Устранено / Архив». Внутри хранится несколько последних копий заметок.</p></div><div class="helpCard"><h3>Рабочий режим</h3><p>🔒 скрывает элементы конструктора и блокирует редактирование подписей, но оставляет доступными поля показаний.</p></div><div class="helpCard"><h3>Шаблоны и коллеги</h3><p>Коллеге GitHub не нужен. После публикации он открывает обычную ссылку. Экспорт шаблона передаёт структуру без ваших заметок и истории.</p></div><div class="helpCard"><h3>Поиск и сворачивание</h3><p>🔎 ищет названия оборудования и полей на текущем листе. Стрелка у карточки оборудования сворачивает/разворачивает её, состояние сохраняется.</p></div><div class="helpCard"><h3>Последний отправленный отчёт</h3><p>После успешной отправки приложение фиксирует значения. Команда «Вернуть последний отправленный» восстанавливает только показания, если текущий черновик был испорчен. Оранжевый индикатор «изменён» означает, что текущие данные отличаются от последней отправки.</p></div><div class="helpCard"><h3>Архив, журнал и статистика</h3><p>Архив хранит заданное количество последних отправленных текстов и структурированных значений. Журнал фиксирует события приложения. 📊 показывает количество отчётов и min/avg/max по показателям оборудования, когда накоплена история.</p></div><div class="helpCard"><h3>Стартовый лист</h3><p>Любой лист можно отметить ⭐ стартовым — он будет открываться первым при следующем запуске.</p></div><div class="helpCard"><h3>Обновления</h3><p>После публикации приложение можно обновлять на GitHub по тому же адресу. Перед крупным обновлением рекомендуется создать полную резервную копию.</p></div>`}
+function helpHtml(){return `<div class="helpCard"><h3>⚡ Отчётник</h3><p>Локальный конструктор оперативных отчётов, разработанный совместно с ChatGPT. Основная задача — быстро заполнить, проверить и отправить отчёт.</p></div><div class="helpCard"><h3>Хранение данных</h3><p>GitHub будет хранить код приложения и встроенные шаблоны. Ваши значения, пользовательские листы, архив, заметки и настройки автоматически в GitHub не отправляются. Приложение сохраняет рабочее состояние локально и дополнительно зеркалит его в IndexedDB. Заметки также дублируются в IndexedDB.</p></div><div class="helpCard"><h3>IndexedDB и сброс телефона</h3><p>IndexedDB — локальная база на устройстве. Закрытие приложения и перезагрузка телефона её не стирают. Но очистка данных сайта/PWA или заводской сброс телефона удалят локальные данные. Поэтому для защиты от сброса нужна внешняя резервная копия файла.</p></div><div class="helpCard"><h3>Резервная копия</h3><p>Полная копия включает листы, настройки, архив, шаблоны, журнал и записную книжку. Чтобы копия пережила заводской сброс, храните файл вне стираемой памяти телефона. Кнопка «Поделиться копией» открывает системное меню Android и позволяет выбрать доступное облако или другое приложение.</p></div><div class="helpCard"><h3>Проверка перед отправкой</h3><p>Проверяются формат чисел, число цифр, температурный разброс, перекос фазного тока, скачки к прошлому отчёту и согласованность S с P/Q. Все пороги редактируются и возвращаются кнопкой «По умолчанию». Проверку можно отключить полностью. Красная кнопка «Всё равно отправить» нужна для реального необычного режима.</p></div><div class="helpCard"><h3>Контроль расчётов</h3><p>🧮 работает по назначенным ролям P, Q, S, cosφ, ток и линейное напряжение. Это оперативная проверка, а не замена терминалу учёта/защиты.</p></div><div class="helpCard"><h3>Записная книжка</h3><p>📝 поддерживает категории, поиск, закрепление и статусы «Актуально / Устранено / Архив». Внутри хранится несколько последних копий заметок.</p></div><div class="helpCard"><h3>Рабочий режим</h3><p>🔒 скрывает элементы конструктора и блокирует редактирование подписей, но оставляет доступными поля показаний.</p></div><div class="helpCard"><h3>Шаблоны и коллеги</h3><p>Коллеге GitHub не нужен. После публикации он открывает обычную ссылку. Экспорт шаблона передаёт структуру без ваших заметок и истории.</p></div><div class="helpCard"><h3>Поиск и сворачивание</h3><p>🔎 ищет названия оборудования и полей на текущем листе. Стрелка у карточки оборудования сворачивает/разворачивает её, состояние сохраняется.</p></div><div class="helpCard"><h3>Последний отправленный отчёт</h3><p>После успешной отправки приложение фиксирует значения. Команда «Вернуть последний отправленный» восстанавливает только показания, если текущий черновик был испорчен. Оранжевый индикатор «изменён» означает, что текущие данные отличаются от последней отправки.</p></div><div class="helpCard"><h3>Архив, журнал и статистика</h3><p>Архив хранит заданное количество последних отправленных текстов и структурированных значений. Журнал фиксирует события приложения. 📊 показывает количество отчётов и min/avg/max по показателям оборудования, когда накоплена история.</p></div><div class="helpCard"><h3>Стартовый лист</h3><p>Любой лист можно отметить ⭐ стартовым — он будет открываться первым при следующем запуске.</p></div><div class="helpCard"><h3>Обновления</h3><p>После публикации приложение можно обновлять на GitHub по тому же адресу. Перед крупным обновлением рекомендуется создать полную резервную копию.</p></div>`}
 function syncFinalSettings(){const v=valCfg();const ve=document.getElementById("validationEnabled");if(ve)ve.checked=project.settings.validationEnabled!==false;for(const [id,k] of [["vMaxDigits","maxDigits"],["vTempWarn","tempWarn"],["vTempHigh","tempHigh"],["vPhaseWarn","phaseWarn"],["vPhaseHigh","phaseHigh"],["vFurnacePhaseWarn","furnacePhaseWarn"],["vFurnacePhaseHigh","furnacePhaseHigh"],["vJumpWarn","jumpWarn"],["vPowerWarn","powerWarn"],["vPowerHigh","powerHigh"]]){const e=document.getElementById(id);if(e)e.value=v[k]}}
 function calcNum(v){
  if(v===undefined||v===null)return null;
@@ -1057,10 +1070,33 @@ function invalidInputs(){
  return bad
 }
 
-function openModal(id){document.getElementById(id).classList.add("show")}
-function closeModal(id){document.getElementById(id).classList.remove("show")}
-document.querySelectorAll("[data-close]").forEach(b=>b.onclick=()=>closeModal(b.dataset.close));
-document.querySelectorAll(".modal").forEach(m=>m.onclick=e=>{if(e.target===m)closeModal(m.id)});
+const modalStack=[];
+let suppressModalHistory=false;
+function visibleModalIds(){return [...document.querySelectorAll(".modal.show")].map(m=>m.id)}
+function openModal(id){
+ const m=document.getElementById(id);if(!m||m.classList.contains("show"))return;
+ m.classList.add("show");modalStack.push(id);
+ if(!suppressModalHistory)history.pushState({ss13:true,modal:id},"");
+}
+function closeModal(id,fromBack=false){
+ const m=document.getElementById(id);if(!m)return;
+ m.classList.remove("show");
+ const ix=modalStack.lastIndexOf(id);if(ix>=0)modalStack.splice(ix,1);
+}
+function closeTopModal(){
+ const shown=visibleModalIds();if(!shown.length)return false;
+ const id=modalStack.length?modalStack[modalStack.length-1]:shown[shown.length-1];
+ closeModal(id,true);return true;
+}
+/* Keep one in-app history guard so Android Back never exits this PWA. */
+if(!history.state?.ss13Guard){history.replaceState({ss13Guard:true},"");history.pushState({ss13Guard:true,top:true},"")}
+window.addEventListener("popstate",()=>{
+ suppressModalHistory=true;
+ if(!closeTopModal()){history.pushState({ss13Guard:true,top:true},"")}
+ suppressModalHistory=false;
+});
+document.querySelectorAll("[data-close]").forEach(b=>b.onclick=()=>{const id=b.dataset.close;if(document.getElementById(id)?.classList.contains("show")&&history.state?.modal===id)history.back();else closeModal(id)});
+document.querySelectorAll(".modal").forEach(m=>m.onclick=e=>{if(e.target===m){if(history.state?.modal===m.id)history.back();else closeModal(m.id)}});
 
 function containerFor(target){
  if(target==="sheet")return{type:"sheet",children:sheet().children,node:sheet()};
@@ -1653,6 +1689,20 @@ document.getElementById("backupAll").onclick=()=>{
  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="SS13_full_backup_FINAL.json";a.click();URL.revokeObjectURL(a.href);
  addLog("backup","Создана полная резервная копия",sheet().name)
 };
+document.getElementById("shareBackup").onclick=async()=>{
+ try{
+  const data=JSON.stringify(fullBackupData(),null,2);
+  const name=`Otchetnik_backup_${new Date().toISOString().slice(0,10)}.json`;
+  const file=new File([data],name,{type:"application/json"});
+  if(navigator.share&&(!navigator.canShare||navigator.canShare({files:[file]}))){
+   await navigator.share({title:"Резервная копия Отчётника",text:"Полная резервная копия",files:[file]});
+   addLog("backup","Резервная копия передана через системное меню",sheet().name);
+  }else{
+   downloadJson(fullBackupData(),name);
+   alert("На этом устройстве системная отправка файлов недоступна. Копия скачана — её можно загрузить в облако вручную.");
+  }
+ }catch(e){if(e?.name!=="AbortError")alert("Не удалось открыть меню отправки резервной копии.")}
+};
 document.getElementById("restoreAll").onclick=()=>document.getElementById("restoreAllFile").click();
 document.getElementById("restoreAllFile").onchange=async e=>{
  const f=e.target.files[0];if(!f)return;
@@ -1711,6 +1761,10 @@ document.getElementById("restoreVersion").onclick=restoreVersion;
 document.getElementById("exportBtn").onclick=()=>{const blob=new Blob([JSON.stringify({project,versions:getVersions()},null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="SS13_FormBuilder_v7_project.json";a.click();URL.revokeObjectURL(a.href)};
 document.getElementById("importBtn").onclick=()=>document.getElementById("importFile").click();
 document.getElementById("importFile").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const d=JSON.parse(await f.text());if(!d.project?.sheets)throw 0;if(confirm("Импорт заменит текущий проект. Продолжить?")){project=d.project;if(!project.settings)project.settings={valueFontSize:14,bold:false,italic:false,underline:false};if(project.settings.showDelta===undefined)project.settings.showDelta=true;if(project.settings.archiveLimit===undefined)project.settings.archiveLimit=72;if(project.settings.reportDateTime===undefined)project.settings.reportDateTime=false;if(project.settings.workMode===undefined)project.settings.workMode=false;if(project.settings.calcColors===undefined)project.settings.calcColors=true;if(project.settings.calcGreen===undefined)project.settings.calcGreen=3;if(project.settings.calcYellow===undefined)project.settings.calcYellow=10;save();if(d.versions)localStorage.setItem(VERS,JSON.stringify(d.versions));render();closeModal("toolsModal")}}catch(err){alert("Неверный файл проекта.")}};
+
+// Prevent browser text-selection/callout on long press of app controls (inputs remain selectable).
+document.addEventListener("contextmenu",e=>{if(e.target.closest?.("button,.tab,.top,.bottom,.blockHead,.objHead,[role=button]")){e.preventDefault()}},true);
+document.addEventListener("selectstart",e=>{if(e.target.closest?.("button,.tab,.top,.bottom,.blockHead,.objHead,[role=button]")){e.preventDefault()}},true);
 
 if(!window.__ss13LinkDelegation){
  window.__ss13LinkDelegation=true;
