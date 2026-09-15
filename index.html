@@ -468,6 +468,8 @@ button:active,.tab:active,[role="button"]:active{transform:scale(.96);filter:bri
 <div class="small">Сохраняются листы, настройки, версии, архив, шаблоны и журнал событий. «Поделиться копией» открывает системное меню Android — файл можно отправить в установленное облако, мессенджер или файловый менеджер.</div>
 </div><div class="card"><h3>Изменение показаний</h3>
 <div class="checkline"><input id="showDelta" type="checkbox" checked><span>Показывать изменение относительно предыдущего отчёта</span></div>
+<div class="checkline"><input id="cursorToEnd" type="checkbox" checked><span>При нажатии на числовое поле ставить курсор в конец значения</span></div>
+<div class="small">Удобно для быстрой замены последней цифры показания. Если отключить — курсор ставится в обычное место касания.</div>
 <div class="small">После сохранения/отправки отчёта текущие значения становятся предыдущими. В следующем отчёте рядом с изменившимся значением появится, например, ↑3, ↓0,2. Если значение не изменилось — ничего не показывается.</div>
 </div><div class="card"><h3>Общее оформление шрифтов</h3>
     <div class="small" style="margin-bottom:8px">Эти параметры меняют сразу весь проект. Индивидуальная настройка поля через <b>Aa</b> имеет приоритет над общей.</div>
@@ -540,6 +542,7 @@ if(project.settings.plainBold===undefined)project.settings.plainBold=false;
 if(project.settings.plainItalic===undefined)project.settings.plainItalic=false;
 if(project.settings.plainUnderline===undefined)project.settings.plainUnderline=false;
 if(project.settings.showLinkMarks===undefined)project.settings.showLinkMarks=true;
+if(project.settings.cursorToEnd===undefined)project.settings.cursorToEnd=true;
 function save(){localStorage.setItem(STORE,JSON.stringify(project));markSaving();idbSet("project",project).catch(()=>{})}
 function sheet(){return project.sheets.find(s=>s.id===project.active)||project.sheets[0]}
 
@@ -651,7 +654,7 @@ function applyProjectStyle(){
 function syncStyleControls(){
  syncFinalSettings();
  const st=project.settings||{valueFontSize:14,bold:false,italic:false,underline:false};
- const rdt=document.getElementById("reportDateTime");if(rdt)rdt.checked=!!project.settings?.reportDateTime;const wm=document.getElementById("workModeSetting");if(wm)wm.checked=!!project.settings?.workMode;const al=document.getElementById("archiveLimit");if(al)al.value=project.settings?.archiveLimit??72;const sd=document.getElementById("showDelta");if(sd)sd.checked=project.settings?.showDelta!==false;const fs=document.getElementById("styleFontSize"); if(fs)fs.value=st.valueFontSize||14;
+ const rdt=document.getElementById("reportDateTime");if(rdt)rdt.checked=!!project.settings?.reportDateTime;const wm=document.getElementById("workModeSetting");if(wm)wm.checked=!!project.settings?.workMode;const al=document.getElementById("archiveLimit");if(al)al.value=project.settings?.archiveLimit??72;const sd=document.getElementById("showDelta");if(sd)sd.checked=project.settings?.showDelta!==false;const ce=document.getElementById("cursorToEnd");if(ce)ce.checked=project.settings?.cursorToEnd!==false;const fs=document.getElementById("styleFontSize"); if(fs)fs.value=st.valueFontSize||14;
  const b=document.getElementById("styleBold"); if(b)b.checked=!!st.bold;
  const i=document.getElementById("styleItalic"); if(i)i.checked=!!st.italic;
  const u=document.getElementById("styleUnderline"); if(u)u.checked=!!st.underline;
@@ -1057,6 +1060,17 @@ function bindCanvas(){
  });
  document.querySelectorAll("[data-toggle]").forEach(e=>e.onchange=()=>change(()=>findNode(e.dataset.toggle).node.enabled=e.checked));
  document.querySelectorAll("[data-value]").forEach(e=>{
+  // For numeric reading fields only: a normal tap always places the caret at the end.
+  // Text fields keep native cursor positioning; the behavior is optional in settings.
+  const n0=findNode(e.dataset.value)?.node;
+  if(!e.readOnly && n0?.fieldType!=="text"){
+   const moveCaretToEnd=()=>{
+    if(project.settings?.cursorToEnd===false)return;
+    requestAnimationFrame(()=>{try{const len=e.value.length;e.setSelectionRange(len,len)}catch(_){}});
+   };
+   e.addEventListener("pointerup",moveCaretToEnd);
+   e.addEventListener("focus",moveCaretToEnd);
+  }
   e.oninput=()=>{
    const n=findNode(e.dataset.value)?.node;if(!n)return;
    if(e.dataset.key){n.values=n.values||{};n.values[e.dataset.key]=e.value}else n.value=e.value;
@@ -1772,6 +1786,7 @@ document.getElementById("openArchive").onclick=()=>{
 };
 document.getElementById("clearArchive").onclick=()=>{if(confirm("Очистить весь архив отчётов?")){saveArchive([]);renderArchive()}};
 document.getElementById("showDelta").onchange=e=>{change(()=>{project.settings.showDelta=e.target.checked})};
+document.getElementById("cursorToEnd").onchange=e=>{change(()=>{project.settings.cursorToEnd=e.target.checked})};
 document.getElementById("applyValueStyle").onclick=()=>{
  const valSize=Math.max(10,Math.min(28,parseInt(document.getElementById("styleFontSize").value,10)||14));
  const labelSize=Math.max(8,Math.min(28,parseInt(document.getElementById("globalLabelSize").value,10)||11));
