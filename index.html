@@ -462,7 +462,10 @@ button:active,.tab:active,[role="button"]:active{transform:scale(.96);filter:bri
 <div class="gridBtns"><button id="saveTemplate">Сохранить текущий лист как шаблон</button><button id="openTemplates">Открыть шаблоны</button></div>
 </div>
 <div class="card"><h3>Полная резервная копия</h3>
-<div class="gridBtns"><button id="backupAll">Скачать резервную копию</button><button id="shareBackup">☁️ Поделиться копией</button><button id="restoreAll">Восстановить копию</button></div>
+<div class="gridBtns"><button id="backupAll">Скачать резервную копию</button><button id="shareBackup">☁️ Поделиться копией</button>
+<button class="btn" id="testSystemShare" type="button" style="margin-top:8px">
+  🧪 Тест меню «Поделиться»
+</button><button id="restoreAll">Восстановить копию</button></div>
 <input id="restoreAllFile" type="file" accept=".json,.txt,application/json,text/plain" accept=".json,application/json" hidden>
 <div class="small">Сохраняются листы, настройки, версии, архив, шаблоны и журнал событий. «Поделиться копией» открывает системное меню Android — файл можно отправить в установленное облако, мессенджер или файловый менеджер.</div>
 </div><div class="card"><h3>Изменение показаний</h3>
@@ -1689,6 +1692,23 @@ document.getElementById("backupAll").onclick=()=>{
  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="SS13_full_backup_FINAL.json";a.click();URL.revokeObjectURL(a.href);
  addLog("backup","Создана полная резервная копия",sheet().name)
 };
+
+document.getElementById("testSystemShare").onclick=async()=>{
+  try{
+    if(!navigator.share){
+      alert("Web Share API недоступен в этом режиме приложения.");
+      return;
+    }
+    await navigator.share({
+      title:"Тест Отчётника",
+      text:"Тест системного меню «Поделиться» из приложения «Отчётник»."
+    });
+  }catch(err){
+    if(err && err.name==="AbortError")return;
+    alert("Не удалось открыть системное меню «Поделиться». Ошибка: "+(err?.name||"неизвестно"));
+  }
+};
+
 document.getElementById("shareBackup").onclick=async()=>{
   const data=fullBackupData();
   const stamp=new Date().toISOString().replace(/[:.]/g,"-");
