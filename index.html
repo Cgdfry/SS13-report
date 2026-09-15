@@ -1690,23 +1690,24 @@ document.getElementById("backupAll").onclick=()=>{
  addLog("backup","Создана полная резервная копия",sheet().name)
 };
 document.getElementById("shareBackup").onclick=async()=>{
+ // Keep creation + capability check + share in the original user gesture.
  const dataObj=fullBackupData();
  const data=JSON.stringify(dataObj,null,2);
  const name=`Otchetnik_backup_${new Date().toISOString().slice(0,10)}.json`;
- // Android/Chrome Web Share accepts text files more consistently than application/json.
- // The contents and .json extension stay unchanged, so restore works normally.
- const file=new File([data],name,{type:"text/plain"});
+ const file=new File([data],name,{type:"application/json"});
  try{
-  if(!navigator.share)throw new Error("Web Share API unavailable");
-  if(navigator.canShare&&!navigator.canShare({files:[file]}))throw new Error("File sharing unavailable");
-  await navigator.share({files:[file]});
+  if(typeof navigator.share!=="function")throw new Error("Web Share API unavailable");
+  const payload={files:[file],title:"Резервная копия Отчётника"};
+  if(typeof navigator.canShare==="function" && !navigator.canShare({files:[file]})){
+   throw new Error("File sharing unavailable");
+  }
+  await navigator.share(payload);
   addLog("backup","Резервная копия передана через системное меню",sheet().name);
  }catch(e){
-  if(e?.name==="AbortError")return;
-  // Guaranteed fallback: never leave the user without a backup file.
+  if(e && e.name==="AbortError")return;
   downloadJson(dataObj,name);
   addLog("backup","Системное меню недоступно; резервная копия скачана",sheet().name);
-  alert("Android не открыл меню «Поделиться». Резервная копия сохранена в загрузки — её можно отправить в облако через системный файловый менеджер.");
+  alert("Системное меню Android не приняло файл. Резервная копия сохранена в «Загрузки».");
  }
 };
 document.getElementById("restoreAll").onclick=()=>document.getElementById("restoreAllFile").click();
