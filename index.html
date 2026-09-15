@@ -425,7 +425,7 @@ button:active,.tab:active,[role="button"]:active{transform:scale(.96);filter:bri
   <div class="mhead"><h2>⚙️ Лист и структура</h2><button class="close" data-close="toolsModal">✕</button></div>
   <div class="scroll">
    <div class="card"><h3>Лист</h3><div class="gridBtns">
-    <button id="renameSheet">Переименовать</button><button id="duplicateSheet">Дублировать лист</button>
+    <button id="renameSheetTop">Переименовать</button><button id="duplicateSheet">Дублировать лист</button>
     <button id="newSheet">＋ Пустой лист</button><button id="deleteSheet" class="danger">Удалить лист</button>
    </div></div>
    
@@ -897,7 +897,7 @@ function snapshotNode(n){
  (n.children||[]).forEach(snapshotNode)
 }
 function snapshotCurrent(){
- const s=sheet();(s.nodes||[]).forEach(snapshotNode);save();render()
+ const s=sheet();(s.children||[]).forEach(snapshotNode);save();render()
 }
 function valueStyle(n){
  const s=n.style||{};
@@ -1076,7 +1076,7 @@ function visibleModalIds(){return [...document.querySelectorAll(".modal.show")].
 function openModal(id){
  const m=document.getElementById(id);if(!m||m.classList.contains("show"))return;
  m.classList.add("show");modalStack.push(id);
- if(!suppressModalHistory)history.pushState({ss13:true,modal:id},"");
+ if(!suppressModalHistory)window.history.pushState({ss13:true,modal:id},"");
 }
 function closeModal(id,fromBack=false){
  const m=document.getElementById(id);if(!m)return;
@@ -1089,14 +1089,14 @@ function closeTopModal(){
  closeModal(id,true);return true;
 }
 /* Keep one in-app history guard so Android Back never exits this PWA. */
-if(!history.state?.ss13Guard){history.replaceState({ss13Guard:true},"");history.pushState({ss13Guard:true,top:true},"")}
+if(!window.history.state?.ss13Guard){window.history.replaceState({ss13Guard:true},"");window.history.pushState({ss13Guard:true,top:true},"")}
 window.addEventListener("popstate",()=>{
  suppressModalHistory=true;
- if(!closeTopModal()){history.pushState({ss13Guard:true,top:true},"")}
+ if(!closeTopModal()){window.history.pushState({ss13Guard:true,top:true},"")}
  suppressModalHistory=false;
 });
-document.querySelectorAll("[data-close]").forEach(b=>b.onclick=()=>{const id=b.dataset.close;if(document.getElementById(id)?.classList.contains("show")&&history.state?.modal===id)history.back();else closeModal(id)});
-document.querySelectorAll(".modal").forEach(m=>m.onclick=e=>{if(e.target===m){if(history.state?.modal===m.id)history.back();else closeModal(m.id)}});
+document.querySelectorAll("[data-close]").forEach(b=>b.onclick=()=>{const id=b.dataset.close;if(document.getElementById(id)?.classList.contains("show")&&window.history.state?.modal===id)window.history.back();else closeModal(id)});
+document.querySelectorAll(".modal").forEach(m=>m.onclick=e=>{if(e.target===m){if(window.history.state?.modal===m.id)window.history.back();else closeModal(m.id)}});
 
 function containerFor(target){
  if(target==="sheet")return{type:"sheet",children:sheet().children,node:sheet()};
@@ -1655,7 +1655,7 @@ document.getElementById("previewBtn").onclick=()=>{forceSend=false;preview()};
 document.getElementById("waBtn").onclick=send;document.getElementById("waBtn2").onclick=send;
 document.getElementById("copyBtn").onclick=async()=>{const t=report();document.getElementById("reportText").value=t;try{await navigator.clipboard.writeText(t)}catch(e){}};
 document.getElementById("toolsBtn").onclick=()=>{renderTree();syncStyleControls();openModal("toolsModal")};
-document.getElementById("renameSheet").onclick=()=>{const n=prompt("Название листа:",sheet().name);if(n)change(()=>sheet().name=n)};
+document.getElementById("renameSheetTop").onclick=()=>{const n=prompt("Название листа:",sheet().name);if(n&&n.trim())change(()=>sheet().name=n.trim())};
 document.getElementById("duplicateSheet").onclick=()=>change(()=>{const n=clone(sheet());n.id=uid("s");n.name=n.name+" копия";n.pinned=false;const renew=arr=>arr.map(regenerateIds);n.children=renew(n.children);project.sheets.push(n);project.active=n.id});
 document.getElementById("newSheet").onclick=()=>change(()=>{const s=blankSheet("Лист "+(project.sheets.length+1));project.sheets.push(s);project.active=s.id});
 document.getElementById("deleteSheet").onclick=()=>{
