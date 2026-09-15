@@ -248,7 +248,7 @@ button:active,.tab:active,[role="button"]:active{transform:scale(.96);filter:bri
 <body>
 <div class="top">
  <div class="toprow">
-  <div><div class="brand">⚡ Отчётник TEST SHARE</div><div class="sub">Конструктор оперативных отчётов</div></div>
+  <div><div class="brand">⚡ Отчётник</div><div class="sub">Конструктор оперативных отчётов</div></div>
   <div class="topBtns"><span id="saveState" class="saveState">✓</span><button id="searchBtn" title="Поиск">🔎</button><button id="notesBtn" title="Записная книжка">📝</button><button id="statsBtn" title="Статистика">📊</button><button id="undoBtn">↶</button><button id="redoBtn">↷</button><button id="calcBtn" title="Контроль расчётов">🧮</button><button id="workModeBtn" title="Рабочий режим">🔓</button><button id="toolsBtn">⚙️</button></div>
  </div>
  <div class="tabs" id="tabs"></div>
@@ -463,9 +463,7 @@ button:active,.tab:active,[role="button"]:active{transform:scale(.96);filter:bri
 </div>
 <div class="card"><h3>Полная резервная копия</h3>
 <div class="gridBtns"><button id="backupAll">Скачать резервную копию</button><button id="shareBackup">☁️ Поделиться копией</button><button id="restoreAll">Восстановить копию</button>
-<button class="btn" id="testSystemShare" type="button" style="grid-column:1 / -1">
-  🧪 Тест меню «Поделиться»
-</button></div>
+</div>
 <input id="restoreAllFile" type="file" accept=".json,.txt,application/json,text/plain" accept=".json,application/json" hidden>
 <div class="small">Сохраняются листы, настройки, версии, архив, шаблоны и журнал событий. «Поделиться копией» открывает системное меню Android — файл можно отправить в установленное облако, мессенджер или файловый менеджер.</div>
 </div><div class="card"><h3>Изменение показаний</h3>
@@ -1693,44 +1691,42 @@ document.getElementById("backupAll").onclick=()=>{
  addLog("backup","Создана полная резервная копия",sheet().name)
 };
 
-document.getElementById("testSystemShare").onclick=async()=>{
-  try{
-    if(!navigator.share){
-      alert("Web Share API недоступен в этом режиме приложения.");
-      return;
-    }
-    await navigator.share({
-      title:"Тест Отчётника",
-      text:"Тест системного меню «Поделиться» из приложения «Отчётник»."
-    });
-  }catch(err){
-    if(err && err.name==="AbortError")return;
-    alert("Не удалось открыть системное меню «Поделиться». Ошибка: "+(err?.name||"неизвестно"));
-  }
-};
-
 document.getElementById("shareBackup").onclick=async()=>{
   const data=fullBackupData();
   const stamp=new Date().toISOString().replace(/[:.]/g,"-");
   const filename=`Otchetnik_backup_${stamp}.txt`;
   const payload=JSON.stringify(data,null,2);
-  const file=new File([payload],filename,{type:"text/plain;charset=utf-8"});
 
+  // На Android системное меню гарантированно открывается для текста.
+  // Сначала пробуем передать настоящий файл, если конкретный WebView/PWA это поддерживает.
   try{
-    if(navigator.share && (!navigator.canShare || navigator.canShare({files:[file]}))){
+    if(navigator.share){
+      const file=new File([payload],filename,{type:"text/plain"});
+      let fileShareSupported=false;
+      try{
+        fileShareSupported=!!(navigator.canShare && navigator.canShare({files:[file]}));
+      }catch(_){}
+
+      if(fileShareSupported){
+        await navigator.share({files:[file],title:"Резервная копия Отчётника"});
+        addLog("backup","Резервная копия передана файлом через системное меню Android",sheet().name);
+        return;
+      }
+
+      // Fallback для установленных PWA/WebView, где Android не разрешает Web Share файлов.
+      // Передаём саму резервную копию через то же системное меню, которое подтверждено тестом.
       await navigator.share({
-        files:[file],
-        title:"Резервная копия Отчётника",
-        text:"Полная резервная копия приложения «Отчётник»"
+        title:filename,
+        text:payload
       });
-      addLog("backup","Резервная копия передана через системное меню Android",sheet().name);
+      addLog("backup","Резервная копия передана через системное меню Android как текст",sheet().name);
       return;
     }
   }catch(err){
     if(err && err.name==="AbortError")return;
   }
 
-  // Fallback: always preserve the backup if file sharing is unavailable.
+  // Последний резервный вариант: сохранить файл на телефон.
   const blob=new Blob([payload],{type:"text/plain;charset=utf-8"});
   const a=document.createElement("a");
   a.href=URL.createObjectURL(blob);
@@ -1739,8 +1735,8 @@ document.getElementById("shareBackup").onclick=async()=>{
   a.click();
   a.remove();
   setTimeout(()=>URL.revokeObjectURL(a.href),1000);
-  addLog("backup","Резервная копия сохранена как TXT — системная отправка файлов недоступна",sheet().name);
-  alert("Системное меню передачи файла недоступно. Копия сохранена на телефон как .txt.");
+  addLog("backup","Резервная копия сохранена на телефон",sheet().name);
+  alert("Системное меню Android недоступно. Копия сохранена на телефон как .txt.");
 };
 document.getElementById("restoreAll").onclick=()=>document.getElementById("restoreAllFile").click();
 document.getElementById("restoreAllFile").onchange=async e=>{
