@@ -469,6 +469,7 @@ button:active,.tab:active,[role="button"]:active{transform:scale(.96);filter:bri
 </div><div class="card"><h3>Изменение показаний</h3>
 <div class="checkline"><input id="showDelta" type="checkbox" checked><span>Показывать изменение относительно предыдущего отчёта</span></div>
 <div class="checkline"><input id="caretToEnd" type="checkbox" checked><span>При нажатии на числовое поле ставить курсор в конец значения</span></div>
+<div class="small">Удобно для быстрой замены последней цифры показаний. Работает только в числовых полях.</div>
 <div class="small">После сохранения/отправки отчёта текущие значения становятся предыдущими. В следующем отчёте рядом с изменившимся значением появится, например, ↑3, ↓0,2. Если значение не изменилось — ничего не показывается.</div>
 </div><div class="card"><h3>Общее оформление шрифтов</h3>
     <div class="small" style="margin-bottom:8px">Эти параметры меняют сразу весь проект. Индивидуальная настройка поля через <b>Aa</b> имеет приоритет над общей.</div>
@@ -690,7 +691,7 @@ function strictNum(v){const t=String(v??"").trim();if(!t)return{empty:true};if(!
 function validateReportSmart(){const c=valCfg(),out=[],prev=sheet().lastSentValues||{};const add=(level,n,msg)=>out.push({level,id:n.id,msg});
  const contextName=(obj,n)=>{const o=String(obj?.title||"").trim(),f=String(n?.label||n?.text||"Поле").trim();return o?(f?`${o} — ${f}`:o):f};
  const phaseValues=n=>{const e=Object.entries(n.values||{}),parts=[];for(const [k,v] of e){const q=strictNum(v);if(q.v!==undefined)parts.push(`${k}=${fmtC(q.v)}`)}return parts.length?parts.join(", "):""};
- (function walk(ns,parentObj=null){for(const n of ns||[]){const obj=n.type==="object"?n:parentObj;if(["field","triple","pair","multi"].includes(n.type)&&n.fieldType!=="text"){const raws=n.type==="field"?[n.value]:Object.values(n.values||{}),nums=[];raws.forEach(raw=>{const p=strictNum(raw);if(p.empty)return;if(p.err){add("error",n,`${contextName(obj,n)}: «${raw}» — неверный формат`);return}const digits=(p.raw.match(/\d/g)||[]).length;if(digits>c.maxDigits&&!/cos|кос/i.test(nodeText(n)))add("error",n,`${contextName(obj,n)}: ${p.raw} — больше ${c.maxDigits} цифр`);nums.push(p.v)});if(nums.length>=3){const mx=Math.max(...nums),mn=Math.min(...nums),av=avg(nums);if(/t°|темп/i.test(nodeText(n))){const d=mx-mn;if(d>=c.tempHigh)add("warn",n,`${contextName(obj,n)}: температуры ${nums.join(" / ")}, разброс ${fmtC(d,1)} °C`);else if(d>=c.tempWarn)add("info",n,`${contextName(obj,n)}: заметный разброс температур ${fmtC(d,1)} °C`)}if(/ток|current/i.test(nodeText(n))&&av){const u=(mx-mn)/av*100,isFurnace=/печь/i.test(obj?.title||"");const hi=isFurnace?(c.furnacePhaseHigh??40):c.phaseHigh,lo=isFurnace?(c.furnacePhaseWarn??25):c.phaseWarn,vals=phaseValues(n),where=contextName(obj,n);if(u>=hi)add("warn",n,`${where}: сильный перекос фазного тока — ${fmtC(u,1)}%${vals?` (${vals})`:""}`);else if(u>=lo)add("info",n,`${where}: перекос фазного тока — ${fmtC(u,1)}%${vals?` (${vals})`:""}`)}}const old=prev[n.id];if(old!==undefined){const oa=typeof old==="object"?Object.values(old):[old];raws.forEach((r,i)=>{const a=strictNum(r),b=strictNum(oa[i]);if(a.v!==undefined&&b.v!==undefined&&Math.abs(b.v)>0){const d=Math.abs(a.v-b.v)/Math.abs(b.v)*100;/* Изменение между отчётами не является аномалией. */}})}}if(n.type==="object"){try{const d=universalCalc(n);if(d.Spq!==null&&d.Sshown!==null){const z=deviation(d.Spq,d.Sshown),name=String(n.title||"Объект").trim();if(z>=c.powerHigh)add("warn",n,`${name}: S по P/Q отличается от измеренного на ${fmtC(z,1)}%`);else if(z>=c.powerWarn)add("info",n,`${name}: S по P/Q отличается на ${fmtC(z,1)}%`)}}catch(e){}}if(n.children)walk(n.children,obj)}})(sheet().children,null);return out}
+ (function walk(ns,parentObj=null){for(const n of ns||[]){const obj=n.type==="object"?n:parentObj;if(["field","triple","pair","multi"].includes(n.type)&&n.fieldType!=="text"){const raws=n.type==="field"?[n.value]:Object.values(n.values||{}),nums=[];raws.forEach(raw=>{const p=strictNum(raw);if(p.empty)return;if(p.err){add("error",n,`${contextName(obj,n)}: «${raw}» — неверный формат`);return}const digits=(p.raw.match(/\d/g)||[]).length;if(digits>c.maxDigits&&!/cos|кос/i.test(nodeText(n)))add("error",n,`${contextName(obj,n)}: ${p.raw} — больше ${c.maxDigits} цифр`);nums.push(p.v)});if(nums.length>=3){const mx=Math.max(...nums),mn=Math.min(...nums),av=avg(nums);if(/t°|темп/i.test(nodeText(n))){const d=mx-mn;if(d>=c.tempHigh)add("warn",n,`${contextName(obj,n)}: температуры ${nums.join(" / ")}, разброс ${fmtC(d,1)} °C`);else if(d>=c.tempWarn)add("info",n,`${contextName(obj,n)}: заметный разброс температур ${fmtC(d,1)} °C`)}if(/ток|current/i.test(nodeText(n))&&av){const u=(mx-mn)/av*100,isFurnace=/печь/i.test(obj?.title||"");const hi=isFurnace?(c.furnacePhaseHigh??40):c.phaseHigh,lo=isFurnace?(c.furnacePhaseWarn??25):c.phaseWarn,vals=phaseValues(n),where=contextName(obj,n);if(u>=hi)add("warn",n,`${where}: сильный перекос фазного тока — ${fmtC(u,1)}%${vals?` (${vals})`:""}`);else if(u>=lo)add("info",n,`${where}: перекос фазного тока — ${fmtC(u,1)}%${vals?` (${vals})`:""}`)}}const old=prev[n.id];if(old!==undefined){const oa=typeof old==="object"?Object.values(old):[old];raws.forEach((r,i)=>{const a=strictNum(r),b=strictNum(oa[i]);if(a.v!==undefined&&b.v!==undefined&&Math.abs(b.v)>0){const d=Math.abs(a.v-b.v)/Math.abs(b.v)*100;/* Изменение между отчётами не является аномалией: нормальный интервал 1–2 часа. */}})}}if(n.type==="object"){try{const d=universalCalc(n);if(d.Spq!==null&&d.Sshown!==null){const z=deviation(d.Spq,d.Sshown),name=String(n.title||"Объект").trim();if(z>=c.powerHigh)add("warn",n,`${name}: S по P/Q отличается от измеренного на ${fmtC(z,1)}%`);else if(z>=c.powerWarn)add("info",n,`${name}: S по P/Q отличается на ${fmtC(z,1)}%`)}}catch(e){}}if(n.children)walk(n.children,obj)}})(sheet().children,null);return out}
 function showValidation(a){const er=a.filter(x=>x.level==="error").length,wa=a.filter(x=>x.level!=="error").length;document.getElementById("validationSummary").innerHTML=`<div class="statGrid"><div class="statCard"><div class="statBig">${er}</div><div class="statLabel">ошибок</div></div><div class="statCard"><div class="statBig">${wa}</div><div class="statLabel">предупреждений</div></div></div>`;document.getElementById("validationList").innerHTML=a.map(x=>`<div class="validationItem ${x.level}"><b>${x.level==="error"?"Ошибка":x.level==="warn"?"Предупреждение":"Проверить"}</b><div>${esc(x.msg)}</div></div>`).join("");openModal("validationModal")}
 function loadNotesSync(){return loadJsonKey(NOTES,{categories:[{id:"general",name:"Общее"}],notes:[]})}
 function saveNotes(d){saveJsonKey(NOTES,d);idbSet("notes",d).catch(()=>{});const b=loadJsonKey(NOTE_BACKUPS,[]);b.unshift({time:nowStamp(),data:clone(d)});if(b.length>10)b.length=10;saveJsonKey(NOTE_BACKUPS,b)}
@@ -1030,11 +1031,11 @@ function nodeHtml(n,parentType){
  const wrap=parentType==="block"?'directItem node':'node';
  if(n.type==="text")return`<div class="${wrap} textline inlineEdit" style="${plainTextStyle(n)}" contenteditable="true" data-inline="${n.id}" data-prop="text" data-node="${n.id}">${esc(n.text)}</div>`;
  if(n.type==="separator")return`<div class="${wrap} sepLine inlineEdit" style="${plainTextStyle(n)}" contenteditable="true" data-inline="${n.id}" data-prop="text" data-node="${n.id}">${esc(n.text)}</div>`;
- if(n.type==="triple")return`<div class="${wrap}" data-node="${n.id}"><div class="row tripleRow"><div class="lab fieldLabel inlineEdit" style="${labelStyle(n)}" contenteditable="true" data-inline="${n.id}" data-prop="label">${esc(n.label)}${linkMarkHtml(n.id)}</div><div class="triple">${["A","B","C"].map(k=>`<div class="ph">${k}<input class="val" type="text" inputmode="decimal" pattern="[0-9.,]*" style="${valueStyle(n)}" data-value="${n.id}" data-key="${k}" value="${esc(n.values?.[k]||"")}">${deltaHtml(n,k)}</div>`).join("")}</div></div></div>`;
- if(n.type==="pair")return`<div class="${wrap}" data-node="${n.id}"><div class="row"><div class="lab fieldLabel inlineEdit" style="${labelStyle(n)}" contenteditable="true" data-inline="${n.id}" data-prop="label">${esc(n.label)}${linkMarkHtml(n.id)}</div><div class="pair"><input class="val" type="text" inputmode="decimal" pattern="[0-9.,]*" style="${valueStyle(n)}" data-value="${n.id}" data-key="L" value="${esc(n.values?.L||"")}">${deltaHtml(n,"L")}<input class="val" type="text" inputmode="decimal" pattern="[0-9.,]*" style="${valueStyle(n)}" data-value="${n.id}" data-key="R" value="${esc(n.values?.R||"")}">${deltaHtml(n,"R")}</div></div></div>`;
+ if(n.type==="triple")return`<div class="${wrap}" data-node="${n.id}"><div class="row tripleRow"><div class="lab fieldLabel inlineEdit" style="${labelStyle(n)}" contenteditable="true" data-inline="${n.id}" data-prop="label">${esc(n.label)}${linkMarkHtml(n.id)}</div><div class="triple">${["A","B","C"].map(k=>`<div class="ph">${k}<input class="val" inputmode="decimal" style="${valueStyle(n)}" data-value="${n.id}" data-key="${k}" value="${esc(n.values?.[k]||"")}">${deltaHtml(n,k)}</div>`).join("")}</div></div></div>`;
+ if(n.type==="pair")return`<div class="${wrap}" data-node="${n.id}"><div class="row"><div class="lab fieldLabel inlineEdit" style="${labelStyle(n)}" contenteditable="true" data-inline="${n.id}" data-prop="label">${esc(n.label)}${linkMarkHtml(n.id)}</div><div class="pair"><input class="val" inputmode="decimal" style="${valueStyle(n)}" data-value="${n.id}" data-key="L" value="${esc(n.values?.L||"")}">${deltaHtml(n,"L")}<input class="val" inputmode="decimal" style="${valueStyle(n)}" data-value="${n.id}" data-key="R" value="${esc(n.values?.R||"")}">${deltaHtml(n,"R")}</div></div></div>`;
  if(n.type==="multi"){
   const cols=Math.max(1,Math.min(6,n.count||3)),hasGroup=!!String(n.label||"").trim();
-  return`<div class="${wrap}" data-node="${n.id}"><div class="row ${hasGroup?"":"noLead"}">${hasGroup?`<div class="lab fieldLabel inlineEdit" style="${labelStyle(n)}" contenteditable="true" data-inline="${n.id}" data-prop="label">${esc(n.label)}${linkMarkHtml(n.id)}</div>`:""}<div class="multi" style="grid-template-columns:repeat(${cols},1fr)">${Array.from({length:cols},(_,i)=>{const k="V"+(i+1),lbl=n.labels?.[i]||"";return`<div class="multiCell ${lbl?"":"noLabel"}">${lbl?`<span>${esc(lbl)}</span>`:""}<input class="val" type="text" inputmode="decimal" pattern="[0-9.,]*" style="${valueStyle(n)}" data-value="${n.id}" data-key="${k}" value="${esc(n.values?.[k]||"")}">${deltaHtml(n,k)}</div>`}).join("")}</div></div></div>`
+  return`<div class="${wrap}" data-node="${n.id}"><div class="row ${hasGroup?"":"noLead"}">${hasGroup?`<div class="lab fieldLabel inlineEdit" style="${labelStyle(n)}" contenteditable="true" data-inline="${n.id}" data-prop="label">${esc(n.label)}${linkMarkHtml(n.id)}</div>`:""}<div class="multi" style="grid-template-columns:repeat(${cols},1fr)">${Array.from({length:cols},(_,i)=>{const k="V"+(i+1),lbl=n.labels?.[i]||"";return`<div class="multiCell ${lbl?"":"noLabel"}">${lbl?`<span>${esc(lbl)}</span>`:""}<input class="val" inputmode="decimal" style="${valueStyle(n)}" data-value="${n.id}" data-key="${k}" value="${esc(n.values?.[k]||"")}">${deltaHtml(n,k)}</div>`}).join("")}</div></div></div>`
  }
  if(n.type==="mirror"){
   const src=findNode(n.sourceId)?.node;
@@ -1044,18 +1045,20 @@ function nodeHtml(n,parentType){
  return`<div class="${wrap}" data-node="${n.id}"><div class="row"><div class="lab fieldLabel inlineEdit" style="${labelStyle(n)}" contenteditable="true" data-inline="${n.id}" data-prop="label">${esc(n.label)}${linkMarkHtml(n.id)}</div><div class="control"><input class="val" style="${valueStyle(n)}" ${n.fieldType==="text"?'inputmode="text"':'inputmode="decimal"'} data-value="${n.id}" value="${esc(n.value||"")}">${deltaHtml(n,"value")}</div></div></div>`
 }
 function syncMirrorsFromSource(sourceId){
+ const refs=mirrorRefs().filter(r=>r.sourceId===sourceId);
+ if(!refs.length)return;
  const src=findNode(sourceId)?.node;if(!src)return;
- for(const r of mirrorRefs().filter(r=>r.sourceId===sourceId)){
-   const box=document.querySelector(`[data-node="${r.mirror.id}"]`);if(!box)continue;
-   const inputs=box.querySelectorAll("input.val");
-   if(src.type==="triple"){["A","B","C"].forEach((k,i)=>{if(inputs[i])inputs[i].value=src.values?.[k]??""})}
-   else if(inputs[0])inputs[0].value=src.value??"";
+ for(const r of refs){
+  const box=document.querySelector(`[data-node="${r.mirror.id}"]`);if(!box)continue;
+  const inputs=box.querySelectorAll("input.val");
+  if(src.type==="triple") ["A","B","C"].forEach((k,i)=>{if(inputs[i])inputs[i].value=src.values?.[k]??""});
+  else if(inputs[0])inputs[0].value=src.value??"";
  }
 }
-function moveCaretToEnd(el){
+function moveNumericCaretToEnd(el){
  if(project.settings?.caretToEnd===false)return;
  const n=findNode(el.dataset.value)?.node;if(!n||n.fieldType==="text")return;
- requestAnimationFrame(()=>{try{const L=el.value.length;el.setSelectionRange(L,L)}catch(_){}});
+ setTimeout(()=>{try{const p=el.value.length;el.setSelectionRange(p,p)}catch(_){}},0);
 }
 function bindCanvas(){
  /* link marker clicks are handled by one delegated listener below */
@@ -1079,9 +1082,9 @@ function bindCanvas(){
    if(e.dataset.key){n.values=n.values||{};n.values[e.dataset.key]=e.value}else n.value=e.value;
    save();validateInput(e,n);syncMirrorsFromSource(n.id)
   };
-  e.onfocus=()=>moveCaretToEnd(e);
-  e.onpointerup=ev=>{if(project.settings?.caretToEnd!==false){ev.preventDefault();moveCaretToEnd(e)}};
-  e.onchange=()=>{snapshot();future=[];save();syncMirrorsFromSource(e.dataset.value)}
+  e.onfocus=()=>moveNumericCaretToEnd(e);
+  e.onpointerup=()=>moveNumericCaretToEnd(e);
+  e.onchange=()=>{snapshot();future=[];save()}
  })
 }
 function isValidNumber(s){s=String(s).trim();return s===""||(/^\d+(?:[.,]\d+)?$/.test(s)&&s.replace(/[.,]/g,"").length<=3)}
@@ -1791,7 +1794,7 @@ document.getElementById("openArchive").onclick=()=>{
 };
 document.getElementById("clearArchive").onclick=()=>{if(confirm("Очистить весь архив отчётов?")){saveArchive([]);renderArchive()}};
 document.getElementById("showDelta").onchange=e=>{change(()=>{project.settings.showDelta=e.target.checked})};
-document.getElementById("caretToEnd").onchange=e=>{project.settings.caretToEnd=e.target.checked;save()};
+document.getElementById("caretToEnd").onchange=e=>{change(()=>{project.settings.caretToEnd=e.target.checked})};
 document.getElementById("applyValueStyle").onclick=()=>{
  const valSize=Math.max(10,Math.min(28,parseInt(document.getElementById("styleFontSize").value,10)||14));
  const labelSize=Math.max(8,Math.min(28,parseInt(document.getElementById("globalLabelSize").value,10)||11));
