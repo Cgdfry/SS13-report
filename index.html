@@ -249,7 +249,7 @@ button:active,.tab:active,[role="button"]:active{transform:scale(.96);filter:bri
 .topNav{display:flex;align-items:center;gap:6px;padding-right:7px;min-width:0}
 .topNav .tabs{flex:1;min-width:0}
 .electroLaunch{flex:none;align-self:center;white-space:nowrap;background:#dceafd;color:#123f83;
- font-size:12px;font-weight:850;padding:5px 9px;margin-bottom:4px;border:1px solid #b9d1f5}
+ font-size:21px;font-weight:850;width:39px;height:36px;display:grid;place-items:center;padding:0;margin-bottom:4px;border:1px solid #b9d1f5;line-height:1}
 .electroModal{z-index:11000!important;padding:0!important;background:var(--bg)!important;right:auto!important;bottom:auto!important;height:100dvh!important;overflow:hidden!important}
 .electroModal .modalCard{width:100%;max-width:none;height:100%;height:100dvh;max-height:none;
  border-radius:0;padding:0;margin:0;background:var(--bg)}
@@ -292,7 +292,7 @@ button:active,.tab:active,[role="button"]:active{transform:scale(.96);filter:bri
  background:#fff0ee;font-size:12px;line-height:1.4;margin-top:10px}
 .electroSoon{font-size:11px;font-weight:850;color:#8d6117;background:#fff0ca;padding:5px 8px;border-radius:999px;display:inline-block;margin-bottom:8px}
 .electroPlan{margin:8px 0;padding-left:18px;color:#46576b;font-size:13px;line-height:1.65}
-@media(max-width:370px){.electroLaunch{font-size:11px;padding:5px 6px}.electroCard{padding:11px}.electroStage{display:none}.electroFields{gap:10px 8px}}
+@media(max-width:370px){.electroLaunch{width:35px;height:34px;font-size:20px}.electroCard{padding:11px}.electroFields{gap:10px 8px}}
 </style>
 <style id="electroCalcStage2Css">
 /* Electrocalc v2: all rules scoped to the separate full-screen module. */
@@ -331,6 +331,22 @@ button:active,.tab:active,[role="button"]:active{transform:scale(.96);filter:bri
 #ecBreakerAdvice .ecAdviceCard p{margin:0;color:#41536a;font-size:12px;line-height:1.5}
 #ecBreakerAdvice .ecAdviceFoot{font-size:11px;line-height:1.45;color:#576d86;margin:0 1px 4px}
 </style>
+<style id="electroPreferencesCss">
+/* Только интерфейс электрокалькулятора. Стандартный атрибут hidden имеет приоритет. */
+.electroLaunch[hidden],.electroTab[hidden],.electroTabs[hidden],.electroSamples[hidden]{display:none!important}
+.electroSettingsBtn{width:40px;height:40px;flex:none;display:grid;place-items:center;
+ background:#eaf0f8;color:#154b96;font-size:19px;line-height:1}
+.electroSettingsBtn.active{background:#174ea6;color:#fff}
+.electroSettingsRow{display:flex;align-items:flex-start;gap:11px;padding:11px 0;
+ border-bottom:1px solid #e7edf4;color:#283c55;font-size:13px;line-height:1.4}
+.electroSettingsRow:last-child{border-bottom:0}
+.electroSettingsRow input{flex:none;width:19px;height:19px;margin:0;accent-color:#174ea6}
+.electroSettingsRow input:disabled+span{color:#8893a0}
+.electroSettingsRow small{display:block;color:#64748b;font-size:11px;margin-top:3px;line-height:1.45}
+.electroSettingsActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}
+.electroSettingsActions button{background:#e6effb;color:#174ea6;font-size:13px;padding:11px 14px}
+.electroSettingsActions button.primary{background:#174ea6;color:#fff}
+</style>
 
 </head>
 <body>
@@ -341,7 +357,7 @@ button:active,.tab:active,[role="button"]:active{transform:scale(.96);filter:bri
  </div>
  <div class="topNav">
  <div class="tabs" id="tabs"></div>
- <button type="button" id="electroCalcBtn" class="electroLaunch" title="Электрокалькулятор — отдельный модуль">⚡ Электро</button>
+ <button type="button" id="electroCalcBtn" class="electroLaunch" title="Открыть электрокалькулятор" aria-label="Открыть электрокалькулятор">⚡</button>
 </div>
 </div>
 
@@ -515,6 +531,10 @@ button:active,.tab:active,[role="button"]:active{transform:scale(.96);filter:bri
  <div class="modalCard">
   <div class="mhead"><h2>⚙️ Лист и структура</h2><button class="close" data-close="toolsModal">✕</button></div>
   <div class="scroll">
+   <div class="card"><h3>⚡ Электрокалькулятор</h3>
+    <label class="checkline"><input id="electroEnabledSetting" type="checkbox" checked><span>Показывать кнопку ⚡ и разрешить открытие калькулятора</span></label>
+    <div class="small">Если снять галочку, кнопка исчезнет. Настройки и введённые расчёты сохранятся; включить обратно можно здесь же.</div>
+   </div>
    <div class="card"><h3>Лист</h3><div class="gridBtns">
     <button id="renameSheetTop">Переименовать</button><button id="duplicateSheet">Дублировать лист</button>
     <button id="newSheet">＋ Пустой лист</button><button id="deleteSheet" class="danger">Удалить лист</button>
@@ -615,7 +635,7 @@ button:active,.tab:active,[role="button"]:active{transform:scale(.96);filter:bri
   <div class="electroHeader">
    <button type="button" class="electroBack" data-close="electroModal" aria-label="Вернуться в Отчётник">←</button>
    <div class="electroHeading"><h2 id="electroTitle">⚡ Электрокалькулятор</h2><p>Отдельный раздел Отчётника · работает офлайн</p></div>
-   <span class="electroStage">Этапы 1–4</span>
+   <button type="button" id="ecSettingsBtn" class="electroSettingsBtn" title="Настройки калькулятора" aria-label="Настройки калькулятора" aria-expanded="false">⚙️</button>
   </div>
   <div class="electroBody scroll">
    <div class="electroInner">
@@ -631,7 +651,7 @@ button:active,.tab:active,[role="button"]:active{transform:scale(.96);filter:bri
       <div class="electroEyebrow">Быстрый расчёт</div>
       <h3>Мощность и ток нагрузки</h3>
       <p>Например, укажи 3 обогревателя по 2 кВт — калькулятор покажет суммарную мощность и расчётный ток. Все приборы считаются включёнными одновременно.</p>
-      <div class="electroSamples">
+      <div class="electroSamples" id="ecExamples">
        <button type="button" class="electroSample" data-electro-example="2">2 × 2 кВт</button>
        <button type="button" class="electroSample" data-electro-example="3">3 × 2 кВт</button>
       </div>
@@ -729,6 +749,23 @@ button:active,.tab:active,[role="button"]:active{transform:scale(.96);filter:bri
       <div id="ecConvError" class="electroError" hidden></div>
      </div>
      <div class="electroCard electroResult" id="ecConvResult" aria-live="polite"><div class="electroEyebrow">Результат</div><div id="ecConvOutput" class="electroMetricGrid"></div><div class="electroFine" id="ecConvNote">Можно вводить запятую или точку.</div></div>
+    </section>
+
+    <section class="electroPanel" id="electroSettings" data-electro-panel="settings" aria-label="Настройки калькулятора" hidden>
+     <div class="electroCard">
+      <div class="electroEyebrow">Внешний вид</div><h3>⚙️ Настройки калькулятора</h3>
+      <p>Оставь только нужные вкладки. Нагрузка всегда доступна; скрытые разделы и все введённые значения сохраняются.</p>
+      <label class="electroSettingsRow"><input type="checkbox" id="ecPrefCable" checked><span><b>Вкладка «Кабель»</b><small>Подбор сечения по выбранной таблице ПУЭ РК и оценка падения напряжения.</small></span></label>
+      <label class="electroSettingsRow"><input type="checkbox" id="ecPrefBreaker" checked><span><b>Вкладка «Автомат»</b><small>Проверка защиты и возможные решения. Требует включённой вкладки «Кабель».</small></span></label>
+      <label class="electroSettingsRow"><input type="checkbox" id="ecPrefConverter" checked><span><b>Вкладка «Конвертер»</b><small>Преобразование кВт, А, кВА, квар и других величин.</small></span></label>
+      <label class="electroSettingsRow"><input type="checkbox" id="ecPrefExamples" checked><span><b>Кнопки готовых примеров</b><small>Быстрый ввод «2 × 2 кВт» и «3 × 2 кВт» на вкладке нагрузки.</small></span></label>
+     </div>
+     <div class="electroCard">
+      <div class="electroEyebrow">Поведение</div><h3>При открытии</h3>
+      <label class="electroSettingsRow"><input type="checkbox" id="ecPrefRemember"><span><b>Продолжать с последней вкладки</b><small>Если отключено, калькулятор всегда открывается с «Нагрузки». Настройки и значения полей не сбрасываются.</small></span></label>
+      <div class="electroNote">Скрытие вкладки не отменяет электротехнические проверки. При выборе сечения и автомата по-прежнему нужно учитывать фактический монтаж и параметры защиты.</div>
+      <div class="electroSettingsActions"><button type="button" id="ecPrefsDefaults">Сбросить только вид</button><button type="button" class="primary" id="ecPrefsDone">← К расчёту</button></div>
+     </div>
     </section>
    </div>
   </div>
@@ -1093,6 +1130,7 @@ function render(){
  const c=document.getElementById("canvas");
  c.innerHTML=s.children.length?s.children.map(n=>nodeHtml(n,"sheet")).join(""):`<div class="empty">Лист пуст.<br>Нажми <b>＋ На лист</b> и добавь что угодно.</div>`;
  bindCanvas();
+ if(window.__ecRefreshSettings)window.__ecRefreshSettings();
 }
 
 
@@ -2385,20 +2423,81 @@ restoreCoreFromIndexedDBIfNeeded();
   const out=el('ecConvOutput');out.replaceChildren(...outputs.map(([l,v])=>metric(l,v)));set('ecConvNote').text(note);
  }
  function update(){const load=loadValues();const cable=calculateCable(load);calculateBreaker(load,cable);calculateConverter()}
- function showPanel(name){
-  document.querySelectorAll('[data-electro-tab]').forEach(b=>{const active=b.dataset.electroTab===name;b.classList.toggle('active',active);b.setAttribute('aria-selected',String(active))});
-  document.querySelectorAll('[data-electro-panel]').forEach(p=>p.hidden=p.dataset.electroPanel!==name);
-  el('electroModal').querySelector('.electroBody').scrollTop=0;
- }
+ /* Настройки хранятся в project.settings, поэтому входят в резервную копию Отчётника.
+    Таблицы и расчётные функции не изменяются; значения полей хранятся как прежде. */
+ const DEFAULT_UI=Object.freeze({cable:true,breaker:true,converter:true,examples:true,remember:false});
+ const uiPrefIds={cable:'ecPrefCable',breaker:'ecPrefBreaker',converter:'ecPrefConverter',examples:'ecPrefExamples',remember:'ecPrefRemember'};
+ const getUI=()=>({...DEFAULT_UI,...(project.settings?.electroUI||{})});
+ const enabled=()=>project.settings?.electroEnabled!==false;
  const screen=el('electroModal');
+ let activePanel='load',lastCalcPanel='load';
+ const tabAllowed=(name,p=getUI())=>name==='load'||(name==='cable'&&p.cable)||(name==='breaker'&&p.cable&&p.breaker)||(name==='convert'&&p.converter);
+ function showPanel(name){
+  if(name!=='settings'&&!tabAllowed(name))name='load';
+  activePanel=name;
+  if(name!=='settings'){
+   lastCalcPanel=name;
+   if(getUI().remember&&project.settings.electroLastTab!==name){project.settings.electroLastTab=name;save()}
+  }
+  document.querySelectorAll('[data-electro-tab]').forEach(b=>{const on=b.dataset.electroTab===name;b.classList.toggle('active',on);b.setAttribute('aria-selected',String(on))});
+  document.querySelectorAll('[data-electro-panel]').forEach(p=>p.hidden=p.dataset.electroPanel!==name);
+  el('ecSettingsBtn').classList.toggle('active',name==='settings');
+  el('ecSettingsBtn').setAttribute('aria-expanded',String(name==='settings'));
+  el('electroModal').querySelector('.electroTabs').hidden=name==='settings';
+  screen.querySelector('.electroBody').scrollTop=0;
+ }
+ function refreshUI(){
+  const p=getUI(),on=enabled(),btn=el('electroCalcBtn');
+  btn.hidden=!on;btn.disabled=!on;
+  el('electroEnabledSetting').checked=on;
+  document.querySelectorAll('[data-electro-tab]').forEach(tab=>{tab.hidden=!tabAllowed(tab.dataset.electroTab,p)});
+  el('ecExamples').hidden=!p.examples;
+  for(const [key,id] of Object.entries(uiPrefIds))el(id).checked=!!p[key];
+  el('ecPrefBreaker').disabled=!p.cable;
+  if(!on&&screen.classList.contains('show'))closeModal('electroModal');
+  if(activePanel!=='settings'&&!tabAllowed(activePanel,p))showPanel('load');
+  if(!tabAllowed(lastCalcPanel,p))lastCalcPanel='load';
+ }
+ function writeUI(part){
+  project.settings=project.settings||{};
+  project.settings.electroUI={...getUI(),...part};
+  save();refreshUI();
+ }
+ // Синхронизация также после восстановления проекта, импорта и Undo/Redo отчёта.
+ window.__ecRefreshSettings=refreshUI;
+ el('electroEnabledSetting').addEventListener('change',e=>{
+  project.settings=project.settings||{};
+  project.settings.electroEnabled=e.target.checked;
+  save();refreshUI();
+ });
+ Object.entries(uiPrefIds).forEach(([key,id])=>el(id).addEventListener('change',e=>writeUI({[key]:e.target.checked})));
+ el('ecPrefsDefaults').addEventListener('click',()=>{
+  project.settings.electroLastTab='load';
+  lastCalcPanel='load';
+  writeUI({...DEFAULT_UI});
+ });
+ el('ecPrefsDone').addEventListener('click',()=>showPanel(lastCalcPanel));
+ el('ecSettingsBtn').addEventListener('click',()=>{
+  if(activePanel==='settings')showPanel(lastCalcPanel);
+  else{refreshUI();showPanel('settings')}
+ });
  function fitScreen(){screen.style.width=document.documentElement.clientWidth+'px'}
  window.addEventListener('resize',()=>{if(screen.classList.contains('show'))fitScreen()});
- el('electroCalcBtn').addEventListener('click',()=>{fitScreen();update();showPanel('load');openModal('electroModal')});
- document.querySelectorAll('[data-electro-tab]').forEach(b=>b.addEventListener('click',()=>{update();showPanel(b.dataset.electroTab)}));
+ el('electroCalcBtn').addEventListener('click',()=>{
+  if(!enabled())return;
+  fitScreen();refreshUI();update();
+  const p=getUI();
+  const initial=p.remember&&tabAllowed(project.settings?.electroLastTab,p)?project.settings.electroLastTab:'load';
+  showPanel(initial);openModal('electroModal');
+ });
+ document.querySelectorAll('[data-electro-tab]').forEach(b=>b.addEventListener('click',()=>{
+  if(!tabAllowed(b.dataset.electroTab))return;
+  update();showPanel(b.dataset.electroTab)
+ }));
  document.querySelectorAll('[data-electro-example]').forEach(b=>b.addEventListener('click',()=>{
   el('ecCount').value=b.dataset.electroExample;el('ecPower').value='2';el('ecPhase').value='single';el('ecVoltage').value='230';el('ecCos').value='1';update();saveState();
  }));
- detailOptions();restoreState();
+ detailOptions();restoreState();refreshUI();
  // При смене материала или типа в подробном режиме выбираем только реальные столбцы таблицы.
  el('ecMaterial').addEventListener('change',()=>{detailOptions();update();saveState()});
  el('ecKind').addEventListener('change',()=>{detailOptions();update();saveState()});
