@@ -310,6 +310,13 @@ button:active,.tab:active,[role="button"]:active{transform:scale(.96);filter:bri
 .electroHeader{position:sticky;top:0;z-index:2}
 .electroBody{overscroll-behavior:contain}
 </style>
+
+<style id="electroPueCss">
+#electroCable .electroField[hidden]{display:none!important}
+#electroCable .electroMetricGrid{align-items:stretch}
+#ecCableSource{border-top:1px solid #d7e5f7;margin-top:13px;padding-top:9px;line-height:1.5}
+#ecCableStatus{margin-top:12px}
+</style>
 </head>
 <body>
 <div class="top">
@@ -638,26 +645,40 @@ button:active,.tab:active,[role="button"]:active{transform:scale(.96);filter:bri
     </section>
 
     <section class="electroPanel" id="electroCable" data-electro-panel="cable" role="tabpanel" hidden>
-     <div class="electroCard"><div class="electroEyebrow">Этап 2 · проверка линии</div><h3>Кабель под твою нагрузку</h3>
-      <p>Ток берётся из вкладки «Нагрузка». Введи длину, материал и условия прокладки. Результат — предварительный: подбор по нагреву и оценка падения напряжения.</p>
+     <div class="electroCard"><div class="electroEyebrow">ПУЭ РК · приложение 1, таблицы 4–7</div><h3>Выбор сечения жилы</h3>
+      <p>Табличные токи теперь взяты из ПУЭ РК. «Провод открыто» и «трёхжильный кабель в воздухе» — <b>разные</b> столбцы. Сечение по нагреву и падению напряжения рассчитываются отдельно от автомата.</p>
       <div class="electroInlineLoad" id="ecCableLoad">Расчётная нагрузка: —</div>
       <div class="electroFields">
-       <div class="electroField"><label for="ecMaterial">Жилы</label><select id="ecMaterial"><option value="cu">Медь (Cu)</option><option value="al">Алюминий (Al)</option></select></div>
-       <div class="electroField"><label for="ecCores">Конструкция кабеля</label><select id="ecCores"><option value="3">3 жилы</option><option value="2">2 жилы</option><option value="other">4–5 жил / другая</option></select></div>
-       <div class="electroField electroFull"><label for="ecCableMethod">Способ прокладки</label><select id="ecCableMethod"><option value="air">Одиночный кабель в воздухе (табл. ПУЭ)</option><option value="other">В трубе, штробе, утеплителе, пучке или другой</option></select></div>
-       <div class="electroField"><label for="ecLength">Длина в одну сторону, м</label><input id="ecLength" type="text" inputmode="decimal" value="20" autocomplete="off"></div>
-       <div class="electroField"><label for="ecDropLimit">Выбранный предел потерь U, %</label><input id="ecDropLimit" type="text" inputmode="decimal" value="5" autocomplete="off"></div>
-       <div class="electroField electroFull"><label for="ecFactor">Суммарная поправка на условия (k, 0–1)</label><input id="ecFactor" type="text" inputmode="decimal" value="1" autocomplete="off"><span class="electroHint">k=1 допустим только при табличных условиях; для температуры, нескольких кабелей и других факторов нужен обоснованный коэффициент. Предел ΔU=5% — пример, не универсальная норма.</span></div>
-       <div class="electroField electroFull" id="ecManualIzWrap" hidden><label for="ecManualIz">Допустимый длительный ток конкретного кабеля, А (из паспорта/таблицы, до поправки k)</label><input id="ecManualIz" type="text" inputmode="decimal" placeholder="Например: 36" autocomplete="off"></div>
-       <div class="electroField electroFull"><label for="ecSection">Проверяемое сечение жилы, мм²</label><select id="ecSection"><option value="auto">Подобрать из таблицы автоматически</option><option value="1.5">1,5</option><option value="2.5">2,5</option><option value="4">4</option><option value="6">6</option><option value="10">10</option><option value="16">16</option><option value="25">25</option><option value="35">35</option><option value="50">50</option><option value="70">70</option><option value="95">95</option><option value="120">120</option><option value="150">150</option><option value="185">185</option></select></div>
+       <div class="electroField"><label for="ecMaterial">Материал жил</label><select id="ecMaterial"><option value="cu">Медь (Cu)</option><option value="al">Алюминий (Al)</option></select></div>
+       <div class="electroField"><label for="ecMode">Режим</label><select id="ecMode"><option value="quick">Быстрый</option><option value="detail">Подробный (таблицы ПУЭ)</option><option value="manual">Данные изготовителя</option></select></div>
+       <div class="electroField electroFull" id="ecQuickWrap"><label for="ecQuickPreset">Проводник и прокладка · быстрый выбор</label><select id="ecQuickPreset">
+        <option value="c3air">Трёхжильный кабель в воздухе (табл. 6/7)</option><option value="wopen">Изолированные провода, открыто</option>
+        <option value="w3tube">Три отдельных провода в одной трубе</option><option value="w3coretube">Один трёхжильный провод в трубе</option>
+        <option value="c3ground">Трёхжильный кабель в земле</option>
+       </select></div>
+       <div class="electroField electroFull" id="ecDetailKindWrap" hidden><label for="ecKind">Нормативная таблица</label><select id="ecKind"><option value="wire">Изолированные провода/шнуры (табл. 4/5)</option><option value="cable">Кабели в оболочке (табл. 6/7)</option></select></div>
+       <div class="electroField electroFull" id="ecDetailMethodWrap" hidden><label for="ecPueMethod">Столбец таблицы ПУЭ РК</label><select id="ecPueMethod"></select></div>
+       <div class="electroField electroFull" id="ecManualIzWrap" hidden><label for="ecManualIz">Допустимый длительный ток по документации, А (до дополнительных поправок)</label><input id="ecManualIz" inputmode="decimal" type="text" placeholder="Укажи ток конкретного кабеля" autocomplete="off"><span class="electroHint">Для XLPE, нестандартной прокладки, неподдерживаемых конструкций, условий вне таблиц 4–7 — бери данные производителя.</span></div>
+       <div class="electroField"><label for="ecLength">Длина линии в одну сторону, м</label><input id="ecLength" type="text" inputmode="decimal" value="20" autocomplete="off"></div>
+       <div class="electroField"><label for="ecDropLimit">Твой предел ΔU, %</label><input id="ecDropLimit" type="text" inputmode="decimal" value="5" autocomplete="off"></div>
+       <div class="electroField electroFull" id="ecTempWrap"><label for="ecTemp">Расчётная температура среды · табл. 3 ПУЭ РК</label><select id="ecTemp"><option value="base">Табличная: +25 °C в воздухе / +15 °C в земле</option><option value="-5">−5 °C и ниже</option><option value="0">0 °C</option><option value="5">+5 °C</option><option value="10">+10 °C</option><option value="15">+15 °C</option><option value="20">+20 °C</option><option value="25">+25 °C</option><option value="30">+30 °C</option><option value="35">+35 °C</option><option value="40">+40 °C</option><option value="45">+45 °C</option><option value="50">+50 °C</option></select><span class="electroHint">Коэффициент табл. 3 применяется для рассматриваемой изоляции с температурой жил +65 °C. Указывай расчётную, а не текущую температуру.</span></div>
+       <div class="electroField electroFull"><label for="ecFactor">Дополнительный обоснованный коэффициент k (группировка и др.)</label><input id="ecFactor" type="text" inputmode="decimal" value="1" autocomplete="off"><span class="electroHint">1 — если других поправок нет. Коэффициент на температуру выше считается отдельно. Для условий, не охваченных ПУЭ-таблицей, выбирай данные изготовителя.</span></div>
+       <div class="electroField electroFull"><label for="ecSection">Проверяемое сечение жилы, мм²</label><select id="ecSection"><option value="auto">Подобрать минимальное автоматически</option><option value="0.5">0,5</option><option value="0.75">0,75</option><option value="1">1</option><option value="1.2">1,2</option><option value="1.5">1,5</option><option value="2">2</option><option value="2.5">2,5</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="8">8</option><option value="10">10</option><option value="16">16</option><option value="25">25</option><option value="35">35</option><option value="50">50</option><option value="70">70</option><option value="95">95</option><option value="120">120</option><option value="150">150</option><option value="185">185</option><option value="240">240</option><option value="300">300</option><option value="400">400</option></select></div>
       </div>
-      <div id="ecCableError" class="electroError" hidden></div>
+      <div id="ecCableError" class="electroError" aria-live="polite" hidden></div>
      </div>
      <div id="ecCableResult" class="electroCard electroResult" aria-live="polite">
-      <div class="electroEyebrow">Предварительная проверка</div>
-      <div class="electroMetricGrid"><div class="electroMetric"><span>Сечение жилы</span><strong id="ecCableArea">—</strong></div><div class="electroMetric"><span>С учётом поправки, Iₓ</span><strong id="ecCableIz">—</strong></div><div class="electroMetric secondary electroFull"><span>Падение напряжения (ориентир)</span><strong id="ecCableDrop">—</strong></div></div>
-      <div id="ecCableStatus" class="electroNote"></div>
-      <div class="electroFine">Табличные значения для определённых конструкций кабеля в воздухе — таблицы 6 и 7 приложения 1 к ПУЭ РК. Для иной конструкции/прокладки вводи паспортный длительно допустимый ток. Проверка КЗ, PE/N, нагрева соединений и фактических условий обязательна отдельно. <a href="https://adilet.zan.kz/rus/docs/V1500010851" target="_blank" rel="noopener">ПУЭ РК ↗</a></div>
+      <div class="electroEyebrow">Предварительный результат</div>
+      <div class="electroMetricGrid">
+       <div class="electroMetric"><span>Минимум по нагреву</span><strong id="ecCableMinHeat">—</strong></div>
+       <div class="electroMetric"><span>Минимум по ΔU (оценка)</span><strong id="ecCableMinDrop">—</strong></div>
+       <div class="electroMetric"><span>Выбранное сечение</span><strong id="ecCableArea">—</strong></div>
+       <div class="electroMetric"><span>Допустимый ток с поправками</span><strong id="ecCableIz">—</strong></div>
+       <div class="electroMetric secondary electroFull"><span>Ориентировочное падение напряжения</span><strong id="ecCableDrop">—</strong></div>
+      </div>
+      <div class="electroFine" id="ecCableSource"></div>
+      <div class="electroNote" id="ecCableStatus" style="white-space:pre-line"></div>
+      <div class="electroFine"><b>Важно:</b> значения в таблицах 4–7 относятся к конкретным видам проводов/кабелей и условиям. ΔU здесь оценено по приближённым R при нагреве и X; это не нормативная таблица ПУЭ. Подбор автомата, КЗ, PE, условия монтажа и минимальное допустимое сечение проверяются отдельно. <a href="https://old.adilet.zan.kz/rus/docs/V1500010851" target="_blank" rel="noopener noreferrer">Официальный текст ПУЭ РК (Әділет)</a>.</div>
      </div>
     </section>
 
@@ -2034,149 +2055,221 @@ restoreCoreFromIndexedDBIfNeeded();
 
 
 <script id="electroCalcModule">
-/* Electrocalc v2. Isolated: does not alter report data, validation, links, or old calculator. */
+/* Электрокалькулятор ПУЭ РК. В отдельном IIFE; главный код Отчётника не изменён.
+   Нормативная база: приказ Минэнерго РК №230, приложение 1, таблицы 3–7,
+   https://old.adilet.zan.kz/rus/docs/V1500010851
+   Опечатки HTML-версии Әділет (216/2260/2205/2210) сверены с опубликованными
+   параллельными изданиями таблиц; ниже правильные 260/260/205/210 А. */
 (()=>{
  'use strict';
- const DATA_KEY='otchetnik_electrocalc_v1';
+ const DATA_KEY='otchetnik_electrocalc_pue_v3';
+ const OLD_KEY='otchetnik_electrocalc_v2';
  const el=id=>document.getElementById(id);
  const format=(n,d=1)=>new Intl.NumberFormat('ru-RU',{maximumFractionDigits:d}).format(n);
+ const num=t=>{const s=String(t??'').trim();return /^\d+(?:[.,]\d+)?$/.test(s)?Number(s.replace(',','.')):NaN};
+ const optional=t=>String(t??'').trim()===''?null:num(t);
+ const good=Number.isFinite;
+ const set=id=>({text:v=>{el(id).textContent=v},hidden:v=>{el(id).hidden=v}});
  const loadIDs=['ecCount','ecPower','ecPhase','ecVoltage','ecCos'];
- const cableIDs=['ecMaterial','ecCores','ecCableMethod','ecLength','ecDropLimit','ecFactor','ecManualIz','ecSection'];
+ const cableIDs=['ecMaterial','ecMode','ecQuickPreset','ecKind','ecPueMethod','ecManualIz','ecLength','ecDropLimit','ecTemp','ecFactor','ecSection'];
  const breakerIDs=['ecBreakerNominal','ecBreakerCurve','ecBreakerIcn','ecIkMax','ecIkMin'];
  const converterIDs=['ecConvMode','ecConvA','ecConvB','ecConvCos','ecConvPhase'];
  const allInputs=[...loadIDs,...cableIDs,...breakerIDs,...converterIDs];
  const nominals=[6,10,13,16,20,25,32,40,50,63,80,100,125,160];
- const sizes=[1.5,2.5,4,6,10,16,25,35,50,70,95,120,150,185];
- // PUE RK, Appendix 1, tables 6 (Cu) and 7 (Al): 2-/3-core cables in air.
- // Applicability depends on the precise conductor insulation and sheath named in the tables.
- const ratings={
-  cu:{'2':[19,27,38,50,70,90,115,140,175,215,260,300,350,405],
-      '3':[19,25,35,42,55,75,95,120,145,180,220,260,305,350]},
-  al:{'2':[null,21,29,38,55,70,90,105,135,165,200,230,270,310],
-      '3':[null,19,27,32,42,60,75,90,110,140,170,200,235,270]}
+ /* Колонки: [сечение, открыто/1-жила-воздух, труба-2 одиночных/2-жилы-воздух,
+    труба-3 одиночных/2-жилы-земля, труба-4 одиночных/3-жилы-воздух,
+    один 2-жильный в трубе/3-жилы-земля, один 3-жильный в трубе].
+    Таблицы 6/7 имеют только пять токовых колонок после сечения. 0 означает «нет данных». */
+ const pue={
+  cu:{wire:{number:4,rows:[
+   [0.5,11,0,0,0,0,0],[0.75,15,0,0,0,0,0],[1,17,16,15,14,15,14],[1.2,20,18,16,15,16,14.5],
+   [1.5,23,19,17,16,18,15],[2,26,24,22,20,23,19],[2.5,30,27,25,25,25,21],[3,34,32,28,26,28,24],
+   [4,41,38,35,30,32,27],[5,46,42,39,34,37,31],[6,50,46,42,40,40,34],[8,62,54,51,46,48,43],
+   [10,80,70,60,50,55,50],[16,100,85,80,75,80,70],[25,140,115,100,90,100,85],[35,170,135,125,115,125,100],
+   [50,215,185,170,150,160,135],[70,270,225,210,185,195,175],[95,330,275,255,225,245,215],
+   [120,385,315,290,260,295,250],[150,440,360,330,0,0,0],[185,510,0,0,0,0,0],
+   [240,605,0,0,0,0,0],[300,695,0,0,0,0,0],[400,830,0,0,0,0,0]
+  ]},cable:{number:6,rows:[
+   [1.5,23,19,33,19,27],[2.5,30,27,44,25,38],[4,41,38,55,35,49],[6,50,50,70,42,60],
+   [10,80,70,105,55,90],[16,100,90,135,75,115],[25,140,115,175,95,150],[35,170,140,210,120,180],
+   [50,215,175,265,145,225],[70,270,215,320,180,275],[95,325,260,385,220,330],
+   [120,385,300,445,260,385],[150,440,350,505,305,435],[185,510,405,570,350,500],[240,605,0,0,0,0]
+  ]}},
+  al:{wire:{number:5,rows:[
+   [2,21,19,18,15,17,14],[2.5,24,20,19,19,19,16],[3,27,24,22,21,22,18],
+   [4,32,28,28,23,25,21],[5,36,32,30,27,28,24],[6,39,36,32,30,31,26],
+   [8,46,43,40,37,38,32],[10,60,50,47,39,42,38],[16,75,60,60,55,60,55],
+   [25,105,85,80,70,75,65],[35,130,100,95,85,95,75],[50,165,140,130,120,125,105],
+   [70,210,175,165,140,150,135],[95,255,215,200,175,190,165],
+   [120,295,245,220,200,230,190],[150,340,275,255,0,0,0],[185,390,0,0,0,0,0],
+   [240,465,0,0,0,0,0],[300,535,0,0,0,0,0],[400,645,0,0,0,0,0]
+  ]},cable:{number:7,rows:[
+   [2.5,23,21,34,19,29],[4,31,29,42,27,38],[6,38,38,55,32,46],
+   [10,60,55,80,42,70],[16,75,70,105,60,90],[25,105,90,135,75,115],
+   [35,130,105,160,90,140],[50,165,135,205,110,175],[70,210,165,245,140,210],
+   [95,250,200,295,170,255],[120,295,230,340,200,295],[150,340,270,390,235,335],
+   [185,390,310,440,270,385],[240,465,0,0,0,0]
+  ]}}
  };
- const rho70={cu:0.0237,al:0.0376}; // Ω·mm²/m: conservative warm-conductor estimates from Schneider Electric EIG.
- const reactance=0.00008; // Ω/m typical approximate X = 0.08 Ω/km for inductive circuits; actual X depends on cable construction.
- const num=t=>{const s=String(t).trim();return /^\d+(?:[.,]\d+)?$/.test(s)?Number(s.replace(',','.')):NaN};
- const optional=t=>String(t).trim()===''?null:num(t);
- const good=x=>Number.isFinite(x);
- const set=id=>({text:v=>{el(id).textContent=v},hidden:v=>{el(id).hidden=v}});
- const state=()=>Object.fromEntries(allInputs.map(id=>[id,el(id).value]));
- function saveState(){try{localStorage.setItem(DATA_KEY,JSON.stringify(state()))}catch(e){/* no storage */}}
- function restoreState(){let d=null;try{d=JSON.parse(localStorage.getItem(DATA_KEY)||'null')}catch(e){}
+ const methods={
+  wopen:{kind:'wire',col:1,soil:false,label:'Провода открыто (в воздухе)'},
+  w2tube:{kind:'wire',col:2,soil:false,label:'Два одножильных провода в одной трубе',count:2},
+  w3tube:{kind:'wire',col:3,soil:false,label:'Три одножильных провода в одной трубе',count:3},
+  w4tube:{kind:'wire',col:4,soil:false,label:'Четыре одножильных провода в одной трубе',count:4},
+  w2coretube:{kind:'wire',col:5,soil:false,label:'Один двухжильный провод в трубе',count:2},
+  w3coretube:{kind:'wire',col:6,soil:false,label:'Один трёхжильный провод в трубе',count:3},
+  c1air:{kind:'cable',col:1,soil:false,label:'Одножильные кабели в воздухе (ток на кабель)'},
+  c2air:{kind:'cable',col:2,soil:false,label:'Двухжильный кабель в воздухе',count:2},
+  c2ground:{kind:'cable',col:3,soil:true,label:'Двухжильный кабель в земле',count:2},
+  c3air:{kind:'cable',col:4,soil:false,label:'Трёхжильный кабель в воздухе',count:3},
+  c3ground:{kind:'cable',col:5,soil:true,label:'Трёхжильный кабель в земле',count:3},
+  c4air:{kind:'cable',col:4,soil:false,label:'Четырёхжильный Al-кабель (пластмассовая изоляция, ≤1 кВ), воздух',count:4,factor:0.92,only:'al'},
+  c4ground:{kind:'cable',col:5,soil:true,label:'Четырёхжильный Al-кабель (пластмассовая изоляция, ≤1 кВ), земля',count:4,factor:0.92,only:'al'}
+ };
+ /* Приложение 1, табл. 3, нормированная температура жилы +65 °C:
+    при среде +25°C (воздух) и +15°C (земля) коэффициент = 1. */
+ const temps=[-5,0,5,10,15,20,25,30,35,40,45,50];
+ const kTempAir=[1.32,1.27,1.22,1.17,1.12,1.06,1,0.94,0.87,0.79,0.71,0.61];
+ const kTempSoil=[1.18,1.14,1.10,1.05,1,0.95,0.89,0.84,0.77,0.71,0.63,0.55];
+ const rho70={cu:0.0237,al:0.0376}; // Ω·мм²/м, приблизительно при нагретой жиле
+ const reactance=0.00008; // Ω/м, ориентир; не ПУЭ-норма
+ function detailOptions(keep){
+  const s=el('ecPueMethod'),kind=el('ecKind').value,mat=el('ecMaterial').value,was=keep??s.value;
+  s.replaceChildren();
+  for(const [key,m] of Object.entries(methods)){
+   if(m.kind!==kind||(m.only&&m.only!==mat))continue;
+   const opt=document.createElement('option');opt.value=key;opt.textContent=m.label;s.append(opt);
+  }
+  if([...s.options].some(o=>o.value===was))s.value=was;
+ }
+ function saveState(){try{localStorage.setItem(DATA_KEY,JSON.stringify(Object.fromEntries(allInputs.map(id=>[id,el(id).value]))))}catch(e){}}
+ function restoreState(){let d=null;try{d=JSON.parse(localStorage.getItem(DATA_KEY)||localStorage.getItem(OLD_KEY)||'null')}catch(e){}
   if(!d||typeof d!=='object')return;
-  allInputs.forEach(id=>{const v=d[id];if(typeof v==='string'&&v.length<35){
-   const node=el(id);if(node.tagName==='SELECT'&&![...node.options].some(o=>o.value===v))return;
-   node.value=v;
-  }});
+  // Переносим нагрузки и общие поля, но НЕ переносим «открытая/скрытая»:
+  // старые категории не фиксировали нормативную конструкцию и прокладку.
+  const isOld=!localStorage.getItem(DATA_KEY);
+  for(const id of allInputs){if(isOld&&['ecMode','ecQuickPreset','ecKind','ecPueMethod','ecTemp','ecFactor','ecSection','ecManualIz'].includes(id))continue;
+   const val=d[id],node=el(id);if(typeof val!=='string'||val.length>70||!node)continue;
+   if(node.tagName==='SELECT'&&![...node.options].some(o=>o.value===val))continue;
+   node.value=val;
+   if(id==='ecKind'||id==='ecMaterial')detailOptions(d.ecPueMethod);
+  }
+  if(!isOld)detailOptions(d.ecPueMethod);
  }
  function loadValues(){
   const n=num(el('ecCount').value),p=num(el('ecPower').value),u=num(el('ecVoltage').value),cos=num(el('ecCos').value);
   const three=el('ecPhase').value==='three',errors=[];
   if(!Number.isInteger(n)||n<1||n>100)errors.push('Количество: целое число от 1 до 100.');
-  if(!good(p)||p<=0||p>10000)errors.push('Мощность прибора должна быть больше нуля.');
+  if(!good(p)||p<=0||p>10000)errors.push('Мощность одного прибора должна быть больше нуля.');
   if(!good(u)||u<50||u>1000)errors.push('Напряжение должно быть от 50 до 1000 В.');
   if(!good(cos)||cos<=0||cos>1)errors.push('cos φ должен быть больше 0 и не выше 1.');
   set('ecVoltageLabel').text(three?'Линейное напряжение, В':'Фазное напряжение, В');
   if(errors.length){set('ecError').text(errors.join(' '));set('ecError').hidden(false);set('ecResult').hidden(true);return null}
   set('ecError').hidden(true);set('ecResult').hidden(false);
   const kw=n*p,amps=kw*1000/(u*cos*(three?Math.sqrt(3):1)),kva=kw/cos;
-  set('ecTotal').text(format(kw,3)+' кВт');
-  set('ecCurrentLabel').text(three?'Расчётный линейный ток':'Расчётный ток');
+  set('ecTotal').text(format(kw,3)+' кВт');set('ecCurrentLabel').text(three?'Расчётный линейный ток':'Расчётный ток');
   set('ecCurrent').text(format(amps,1)+' А');set('ecApparent').text(format(kva,3)+' кВА');
-  set('ecResultNote').text((three
-   ?'Ток рассчитан только для симметричной трёхфазной нагрузки. Однофазные приборы на разных фазах нужно проверять отдельно; одинаковая сумма кВт не гарантирует симметрии.'
-   :'Все приборы считаются включёнными одновременно. Перейди во вкладку «Кабель», чтобы учесть конструкцию линии и потери напряжения.')
-   +(amps>16?' Если эти приборы питаются от одной розетки/удлинителя на 16 А, их совместный ток превышает её номинал. Кабель и автомат линии не увеличивают допустимый ток розетки.':''));
-  return {n,p,u,cos,three,kw,amps,kva};
+  set('ecResultNote').text((three?'Расчёт только для симметричной трёхфазной нагрузки; однофазные приборы по фазам проверяй отдельно.':'Предполагается одновременная работа всех приборов. Подбор жилы и защита проверяются отдельно.')+(amps>16?' Одна обычная розетка/удлинитель на 16 А такую нагрузку не допускает.':''));
+  return{n,p,u,cos,three,kw,amps,kva};
  }
  function calcDrop(load,length,section,material){
-  const factor=load.three?Math.sqrt(3):2;
-  // Single-phase: 2 · I · L · (R cosφ + X sinφ); balanced 3ph: √3 · I · L · (...).
-  // X is an approximate positive inductive reactance; capacitive circuits need separate engineering.
-  const r=rho70[material]/section, sin=Math.sqrt(Math.max(0,1-load.cos*load.cos));
-  const volts=factor*load.amps*length*(r*load.cos+reactance*sin);
-  return {volts,percent:100*volts/load.u};
+  const r=rho70[material]/section,si=Math.sqrt(Math.max(0,1-load.cos*load.cos));
+  const volts=(load.three?Math.sqrt(3):2)*load.amps*length*(r*load.cos+reactance*si);
+  return{volts,percent:100*volts/load.u};
  }
  function bestNominal(ib,iz){return nominals.find(v=>v+1e-8>=ib&&v<=iz+1e-8)||null}
+ function activeMethod(){return el('ecMode').value==='quick'?el('ecQuickPreset').value:el('ecPueMethod').value}
+ function resetCableDisplay(){for(const id of ['ecCableMinHeat','ecCableMinDrop','ecCableArea','ecCableIz','ecCableDrop'])set(id).text('—')}
  function calculateCable(load){
-  el('ecManualIzWrap').hidden=el('ecCableMethod').value==='air'&&el('ecCores').value!=='other';
-  if(!load){set('ecCableLoad').text('Сначала исправь исходные данные на вкладке «Нагрузка».');set('ecCableError').hidden(true);set('ecCableResult').hidden(true);return null}
+  const mode=el('ecMode').value,manual=mode==='manual',mat=el('ecMaterial').value;
+  el('ecQuickWrap').hidden=mode!=='quick';el('ecDetailKindWrap').hidden=mode!=='detail';el('ecDetailMethodWrap').hidden=mode!=='detail';
+  el('ecManualIzWrap').hidden=!manual;el('ecTempWrap').hidden=manual;
+  if(!load){set('ecCableLoad').text('Сначала исправь значения на вкладке «Нагрузка».');set('ecCableError').hidden(true);set('ecCableResult').hidden(true);return null}
   set('ecCableLoad').text(format(load.kw,3)+' кВт · '+format(load.amps,2)+' А · '+(load.three?'3~, симметричная':'1~'));
-  const length=num(el('ecLength').value),dropLimit=num(el('ecDropLimit').value),k=num(el('ecFactor').value);
-  const material=el('ecMaterial').value,cores=el('ecCores').value,method=el('ecCableMethod').value,requested=el('ecSection').value;
-  const tableMode=method==='air'&&cores!=='other';
-  const errors=[];
-  if(!good(length)||length<=0||length>100000)errors.push('Длина должна быть от 0 до 100 000 м.');
-  if(!good(dropLimit)||dropLimit<=0||dropLimit>15)errors.push('Укажи выбранный предел падения напряжения от 0 до 15%.');
-  if(!good(k)||k<=0||k>1)errors.push('Поправка k должна быть больше 0 и не выше 1.');
-  let manualIz=null;
-  if(!tableMode){manualIz=num(el('ecManualIz').value);if(!good(manualIz)||manualIz<=0||manualIz>3000)errors.push('Для такой прокладки/конструкции введи допустимый ток конкретного кабеля из документации.');if(requested==='auto')errors.push('Для нестандартной прокладки выбери конкретное сечение жилы.');}
-  if(errors.length){set('ecCableError').text(errors.join(' '));set('ecCableError').hidden(false);set('ecCableResult').hidden(true);return null}
-  set('ecCableError').hidden(true);set('ecCableResult').hidden(false);
-  let candidates=[];
-  if(tableMode){
-   const arr=ratings[material][cores];
-   sizes.forEach((area,i)=>{const raw=arr[i];if(raw!==null){const drop=calcDrop(load,length,area,material);candidates.push({area,raw,iz:raw*k,drop,standard:bestNominal(load.amps,raw*k)})}});
-  } else {
-   const area=num(requested);const drop=calcDrop(load,length,area,material);
-   candidates=[{area,raw:manualIz,iz:manualIz*k,drop,standard:bestNominal(load.amps,manualIz*k)}];
+  const length=num(el('ecLength').value),dropLimit=num(el('ecDropLimit').value),group=num(el('ecFactor').value),requested=el('ecSection').value;
+  const key=manual?null:activeMethod(),m=manual?null:methods[key],errors=[];
+  if(!good(length)||length<=0||length>100000)errors.push('Длина линии: число больше 0 и не выше 100 000 м.');
+  if(!good(dropLimit)||dropLimit<=0||dropLimit>15)errors.push('Укажи выбранный предел ΔU от 0 до 15 %.');
+  if(!good(group)||group<=0||group>1)errors.push('Дополнительный коэффициент k: больше 0 и не выше 1.');
+  if(!manual&&(!m||(m.only&&m.only!==mat)))errors.push('Такой вариант недоступен в выбранной нормативной таблице.');
+  if(!manual&&m&&load.three&&[2].includes(m.count))errors.push('Двухжильный провод/кабель не содержит трёх фазных проводников для симметричной сети 3~. Выбери подходящую конструкцию.');
+  let kT=1,temperature=el('ecTemp').value;
+  if(!manual&&m&&temperature!=='base'){
+   const t=Number(temperature),i=temps.indexOf(t);
+   if(i<0)errors.push('Выбери температуру из таблицы 3 ПУЭ РК.');
+   else kT=(m.soil?kTempSoil:kTempAir)[i];
   }
-  const chosen=requested==='auto'
-   ?candidates.find(c=>c.iz+1e-8>=load.amps&&c.drop.percent<=dropLimit+1e-8&&c.standard!==null)
-   :candidates.find(c=>String(c.area)===String(num(requested)));
-  if(!chosen){
-   set('ecCableArea').text('Не найдено');set('ecCableIz').text('—');set('ecCableDrop').text('—');
-   set('ecCableStatus').text('В выбранной таблице нет сечения, проходящего одновременно по длительному току, выбранному падению напряжения и номиналу защиты. Выбери другой кабель или введи паспортные данные.');
+  let manualIz=null;
+  if(manual){manualIz=num(el('ecManualIz').value);if(!good(manualIz)||manualIz<=0||manualIz>3000)errors.push('Введи допустимый длительный ток по документации, больше 0 и не выше 3000 А.');
+   if(requested==='auto')errors.push('При вводе данных производителя выбери конкретное сечение жилы.');
+  }
+  if(errors.length){set('ecCableError').text(errors.join(' '));set('ecCableError').hidden(false);set('ecCableResult').hidden(true);resetCableDisplay();return null}
+  set('ecCableError').hidden(true);set('ecCableResult').hidden(false);
+  let candidates=[];let src='';
+  if(manual){const area=num(requested);candidates=[{area,raw:manualIz,iz:manualIz*group,drop:calcDrop(load,length,area,mat)}];src='Данные изготовителя/паспорта: '+format(manualIz,1)+' А до k='+format(group,3)+'. Температурная поправка ПУЭ к ним автоматически не применяется.'}
+  else{
+   const t=pue[mat][m.kind],factor=m.factor||1;
+   candidates=t.rows.filter(r=>r[m.col]>0).map(r=>({area:r[0],raw:r[m.col],iz:r[m.col]*factor*kT*group,drop:calcDrop(load,length,r[0],mat)}));
+   const base=m.soil?'+15 °C (земля)':' +25 °C (воздух)';
+   src='ПУЭ РК, приложение 1, таблица '+t.number+', столбец «'+m.label+'». База: '+base+' / жила +65 °C.'+
+    ' kₜ='+format(kT,3)+(temperature==='base'?' (табличная температура)':' (табл. 3, среда '+temperature+' °C)')+
+    (factor<1?'; 4-жильный Al-кабель ×'+factor+' (примечание табл. 7)':'')+'; дополнительный k='+format(group,3)+'.';
+  }
+  const minHeat=candidates.find(c=>c.iz+1e-8>=load.amps);
+  const minDrop=candidates.find(c=>c.drop.percent<=dropLimit+1e-8);
+  const chosen=requested==='auto'?candidates.find(c=>c.iz+1e-8>=load.amps&&c.drop.percent<=dropLimit+1e-8):candidates.find(c=>String(c.area)===String(num(requested)));
+  set('ecCableMinHeat').text(manual?'—':minHeat?format(minHeat.area,2)+' мм²':'не найдено');
+  set('ecCableMinDrop').text(manual?'—':minDrop?format(minDrop.area,2)+' мм²':'не найдено');
+  set('ecCableSource').text(src);
+  if(!chosen){set('ecCableArea').text('Не найдено');set('ecCableIz').text('—');set('ecCableDrop').text('—');
+   set('ecCableStatus').text(requested==='auto'?'В выбранной таблице нет сечения, одновременно проходящего по нагреву и заданному пределу ΔU. Проверь исходные данные или выбери подходящую конструкцию по документации.':'Для выбранного сечения нет строки в этой колонке таблицы. Выбери другое сечение или метод.');
    return null;
   }
-  set('ecCableArea').text(format(chosen.area,1)+' мм²');
-  set('ecCableIz').text(format(chosen.iz,1)+' А');
+  const heatOK=chosen.iz+1e-8>=load.amps,dropOK=chosen.drop.percent<=dropLimit+1e-8;
+  set('ecCableArea').text(format(chosen.area,2)+' мм²');set('ecCableIz').text(format(chosen.iz,2)+' А');
   set('ecCableDrop').text(format(chosen.drop.volts,2)+' В · '+format(chosen.drop.percent,2)+' %');
-  let notes=[];
-  const heatOK=chosen.iz+1e-8>=load.amps,dropOK=chosen.drop.percent<=dropLimit+1e-8,breakerOK=chosen.standard!==null;
-  notes.push(heatOK?'По длительному току: предварительно проходит.':'НЕ проходит: ток нагрузки выше допустимого тока кабеля.');
-  notes.push(dropOK?'По выбранному пределу падения напряжения: проходит.':'НЕ проходит: превышен выбранный предел падения напряжения.');
-  notes.push(breakerOK?'Предварительный номинал по Iᵦ ≤ Iₙ ≤ Iₓ: '+format(chosen.standard,1)+' А; кривая B/C/D и Icn не определены.':'Стандартный номинал автомата в диапазоне Iᵦ ≤ Iₙ ≤ Iₓ не найден.');
-  if(load.three&&cores==='3')notes.push('Внимание: трёхжильный кабель с тремя фазами не содержит отдельной жилы PE; защита и состав жил требуют отдельного решения. Для 4-/5-жильного кабеля введи паспортный ток.');
-  if(!load.three&&cores==='2')notes.push('Внимание: для однофазной цепи с необходимым PE двухжильного кабеля недостаточно.');
-  if(load.cos<0.95)notes.push('Для оценки ΔU принято индуктивное X≈0,08 Ом/км; реальная реактивность зависит от кабеля. Для ёмкостной нагрузки эта оценка неприменима.');
-  notes.push(tableMode?'Ток взят из табл. 6/7 приложения 1 ПУЭ РК для указанной конструкции и одиночной прокладки в воздухе; проверь соответствие конкретного изделия.':'Ток взят из введённой паспортной характеристики. Проверь её с учётом реальной прокладки.');
-  if(k===1)notes.push('Коэффициент k=1 допустим, только если нет необходимых поправок на температуру, группировку и прочие условия.');
+  const notes=[
+   (heatOK?'✓ По нагреву: проходит':'✕ По нагреву: превышен допустимый ток')+' ('+format(load.amps,2)+' А / '+format(chosen.iz,2)+' А).',
+   (dropOK?'✓ По заданному ΔU: ориентировочно проходит':'✕ По заданному ΔU: превышен выбранный предел')+' ('+format(chosen.drop.percent,2)+' % / '+format(dropLimit,2)+' %).',
+   'Автомат проверяется отдельно: его номинал НЕ увеличивает минимальное сечение при подборе.',
+  ];
+  if(heatOK&&load.amps/chosen.iz>0.95)notes.push('Внимание: загрузка выбранной жилы составляет '+format(load.amps/chosen.iz*100,1)+' % допустимого тока. Уточни реальные условия прокладки, температуру и все поправочные коэффициенты.');
+  if(!manual&&m&&mat==='cu'&&m.kind==='cable')notes.push('Таблица 6 ПУЭ РК относится к перечисленным в ней медным кабелям с резиновой изоляцией. Для кабеля другой конструкции (например, с ПВХ-изоляцией) уточни применимость таблицы по документации или используй режим «Данные изготовителя».');
+  if(!manual&&m&&key==='wopen')notes.push('Открыто проложенные отдельные провода: при совместной прокладке или группировке учитывай фактическое охлаждение и снижающие коэффициенты.');
+  if(!manual&&m&&key==='c1air')notes.push('Для одножильных кабелей ток показан на один кабель; взаимное тепловое влияние нескольких кабелей учитывается отдельно.');
+  if(!manual&&m&&m.soil)notes.push('Для земли необходимо проверить грунт, глубину, взаимный нагрев кабелей и фактический способ прокладки.');
+  if(group===1)notes.push('k=1 означает, что дополнительных снижающих факторов нет; убедись в этом по фактической трассе.');
+  if(load.cos<0.95)notes.push('Оценка ΔU принимает индуктивную реактивность X≈0,08 Ом/км; для ёмкостной нагрузки модель неприменима.');
+  notes.push('Таблицы 4–7 не заменяют проверки минимального сечения, требований к кабелю, КЗ, защиты и проекта.');
   set('ecCableStatus').text(notes.join('\n'));
-  el('ecCableStatus').style.whiteSpace='pre-line';
-  return {...chosen,ib:load.amps,heatOK,dropOK,breakerOK,load,material,cores,method};
+  return{...chosen,ib:load.amps,heatOK,dropOK,load,material:mat,method:key,source:src};
  }
  function chk(kind,msg){const e=document.createElement('div');e.className='electroCheck '+kind;e.textContent=msg;return e}
  function calculateBreaker(load,cable){
   const checks=el('ecBreakerChecks');checks.replaceChildren();
-  if(!load){set('ecBreakerLoad').text('Исходная нагрузка некорректна.');set('ecBreakerSelected').text('—');set('ecBreakerIz').text('—');checks.append(chk('bad','Исправь исходные данные на вкладке «Нагрузка».'));return}
-  set('ecBreakerLoad').text('Iᵦ = '+format(load.amps,2)+' А · '+(cable?'выбранное сечение '+format(cable.area,1)+' мм²':'допустимый ток кабеля пока не задан'));
-  const requested=el('ecBreakerNominal').value;
-  const nominal=requested==='auto'?(cable?bestNominal(load.amps,cable.iz):null):num(requested);
-  const curve=el('ecBreakerCurve').value;
+  if(!load){set('ecBreakerLoad').text('Исходные данные некорректны.');set('ecBreakerSelected').text('—');set('ecBreakerIz').text('—');checks.append(chk('bad','Исправь вкладку «Нагрузка».'));return}
+  set('ecBreakerLoad').text('Iᵦ = '+format(load.amps,2)+' А · '+(cable?'сечение '+format(cable.area,2)+' мм²':'не выбран/не проходит кабель'));
+  const req=el('ecBreakerNominal').value,nominal=req==='auto'?(cable?bestNominal(load.amps,cable.iz):null):num(req),curve=el('ecBreakerCurve').value;
   const icn=optional(el('ecBreakerIcn').value),ikMax=optional(el('ecIkMax').value),ikMin=optional(el('ecIkMin').value);
-  set('ecBreakerSelected').text(nominal?format(nominal,0)+' А'+(curve?' · '+curve:'')+(icn!==null&&good(icn)?' · '+format(icn,1)+' кА':''):'Нет подбора');
-  set('ecBreakerIz').text(cable?format(cable.iz,1)+' А':'Неизвестен');
-  if(!cable){checks.append(chk('pending','Сначала определи сечение и допустимый ток во вкладке «Кабель». Выбор по одной мощности не выполняется.'));return}
-  if(!nominal){checks.append(chk('bad','Для этой пары нагрузки и кабеля нет стандартного номинала, выполняющего Iᵦ ≤ Iₙ ≤ Iₓ.'));return}
-  const goodOverload=nominal+1e-8>=load.amps&&nominal<=cable.iz+1e-8;
-  checks.append(chk(goodOverload?'ok':'bad',(goodOverload?'Предварительно соблюдено':'Нарушено')+' Iᵦ ≤ Iₙ ≤ Iₓ: '+format(load.amps,2)+' ≤ '+nominal+' ≤ '+format(cable.iz,1)+' А.'));
-  checks.append(chk(cable.dropOK?'ok':'bad','Падение напряжения: '+format(cable.drop.percent,2)+'% — '+(cable.dropOK?'в выбранном пределе.':'превышает выбранный предел.')));
-  if(ikMax!==null&&(!good(ikMax)||ikMax<=0))checks.append(chk('bad','Максимальный ток КЗ должен быть положительным числом в кА.'));
-  else if(icn===null)checks.append(chk('pending','Отключающая способность Icn не выбрана. Её нельзя назначить без максимального тока КЗ в точке установки и данных автомата.'));
-  else if(ikMax===null)checks.append(chk('pending','Максимальный ток КЗ неизвестен — выбранная отключающая способность '+format(icn,1)+' кА не проверена.'));
-  else checks.append(chk(ikMax<=icn?'ok':'bad','Iₖ max = '+format(ikMax,2)+' кА; Icn = '+format(icn,1)+' кА. '+(ikMax<=icn?'По сравнению величин проходит, необходимы проверка производителя и схемы.':'Отключающая способность недостаточна.')));
-  if(ikMin!==null&&(!good(ikMin)||ikMin<=0))checks.append(chk('bad','Минимальный ток КЗ должен быть положительным числом в А.'));
-  else if(!curve)checks.append(chk('pending','Характеристика B/C/D не выбрана. Учитывай пусковые токи и минимальный ток КЗ.'));
-  else{
-   const upper={B:5,C:10,D:20}[curve]*nominal;
-   if(ikMin===null)checks.append(chk('pending','Минимальный ток КЗ в конце линии не указан — гарантированное мгновенное отключение для '+curve+' (≈ '+format(upper,0)+' А) не проверено.'));
-   else checks.append(chk(ikMin>=upper?'ok':'pending','Iₖ min = '+format(ikMin,0)+' А; верхняя граница магнитного расцепления '+curve+' ≈ '+format(upper,0)+' А. '+(ikMin>=upper?'По ориентировочному порогу проходит; проверь нормативное время отключения.':'Мгновенное отключение не подтверждено; нужен расчёт времени отключения.')));
+  set('ecBreakerSelected').text(nominal?format(nominal,0)+' А'+(curve?' · '+curve:'')+(icn!==null&&good(icn)?' · '+format(icn,1)+' кА':''):'Не подобран');
+  set('ecBreakerIz').text(cable?format(cable.iz,2)+' А':'Неизвестен');
+  if(!cable){checks.append(chk('pending','Сначала проверь кабель и допустимый ток во вкладке «Кабель».'));return}
+  if(!nominal){checks.append(chk('bad','Стандартный номинал, удовлетворяющий Iᵦ ≤ Iₙ ≤ Iₓ, не найден. Это НЕ отменяет отдельный результат выбора сечения по нагреву.'));return}
+  const over=nominal+1e-8>=load.amps&&nominal<=cable.iz+1e-8;
+  checks.append(chk(over?'ok':'bad',(over?'Предварительно выполняется':'НЕ выполняется')+' Iᵦ ≤ Iₙ ≤ Iₓ: '+format(load.amps,2)+' ≤ '+format(nominal,0)+' ≤ '+format(cable.iz,2)+' А.'));
+  checks.append(chk(cable.dropOK?'ok':'bad','Оценка ΔU: '+format(cable.drop.percent,2)+' % — '+(cable.dropOK?'в выбранном пределе':'превышен выбранный предел')));
+  if(ikMax!==null&&(!good(ikMax)||ikMax<=0))checks.append(chk('bad','Iₖ max должен быть положительным числом в кА.'));
+  else if(icn===null)checks.append(chk('pending','Отключающая способность Icn не выбрана. Нужны параметры сети и аппарата.'));
+  else if(ikMax===null)checks.append(chk('pending','Iₖ max не введён: Icn='+format(icn,1)+' кА не подтверждена.'));
+  else checks.append(chk(ikMax<=icn?'ok':'bad','Iₖ max '+format(ikMax,2)+' кА / Icn '+format(icn,1)+' кА: '+(ikMax<=icn?'по величинам проходит; проверь тип аппарата и условия':'отключающая способность недостаточна')));
+  if(ikMin!==null&&(!good(ikMin)||ikMin<=0))checks.append(chk('bad','Iₖ min должен быть положительным числом в амперах.'));
+  else if(!curve)checks.append(chk('pending','Характеристика B/C/D не выбрана. Требуется учитывать пусковые токи и минимальный Iₖ.'));
+  else{const upper={B:5,C:10,D:20}[curve]*nominal;
+   if(ikMin===null)checks.append(chk('pending','Iₖ min в конце линии не указан: мгновенное срабатывание '+curve+' (верхняя граница ≈ '+format(upper,0)+' А) не проверено.'));
+   else checks.append(chk(ikMin>=upper?'ok':'pending','Iₖ min = '+format(ikMin,0)+' А, верхняя граница электромагнитного расцепления ≈ '+format(upper,0)+' А; '+(ikMin>=upper?'по ориентиру проходит, проверь время отключения':'мгновенное отключение не подтверждено')));
   }
-  if(!cable.heatOK||!cable.dropOK)checks.append(chk('bad','Сначала исправь выбор кабеля: сечение/допустимый ток/падение напряжения.'));
-  if((load.three&&cable.cores==='3')||(!load.three&&cable.cores==='2'))checks.append(chk('pending','Выбранная конструкция кабеля не включает отдельную жилу PE для данной схемы. Состав жил и защитное заземление надо проверить отдельно.')); 
-  checks.append(chk('pending','Защита PE, проверка петли замыкания, I²t кабеля при КЗ, требования к УЗО и документация автомата здесь не рассчитаны. Это не окончательное заключение о безопасности.'));
+  if(!cable.heatOK||!cable.dropOK)checks.append(chk('bad','Выбранная жила не прошла одну из проверок.'));
+  checks.append(chk('pending','Нужно отдельно подтвердить I₂ ≤ 1,45 Iₓ, термостойкость I²t при КЗ, петлю замыкания, время отключения, PE и условия производителя. Это не разрешение на монтаж.'));
  }
  function metric(label,value){const e=document.createElement('div');e.className='electroMetric';const s=document.createElement('span');s.textContent=label;const b=document.createElement('strong');b.textContent=value;e.append(s,b);return e}
  function calculateConverter(){
@@ -2220,11 +2313,15 @@ restoreCoreFromIndexedDBIfNeeded();
  document.querySelectorAll('[data-electro-example]').forEach(b=>b.addEventListener('click',()=>{
   el('ecCount').value=b.dataset.electroExample;el('ecPower').value='2';el('ecPhase').value='single';el('ecVoltage').value='230';el('ecCos').value='1';update();saveState();
  }));
- allInputs.forEach(id=>el(id).addEventListener(el(id).tagName==='SELECT'?'change':'input',()=>{
+ detailOptions();restoreState();
+ // При смене материала или типа в подробном режиме выбираем только реальные столбцы таблицы.
+ el('ecMaterial').addEventListener('change',()=>{detailOptions();update();saveState()});
+ el('ecKind').addEventListener('change',()=>{detailOptions();update();saveState()});
+ allInputs.filter(id=>!['ecMaterial','ecKind'].includes(id)).forEach(id=>el(id).addEventListener(el(id).tagName==='SELECT'?'change':'input',()=>{
   if(id==='ecPhase')el('ecVoltage').value=el(id).value==='three'?'400':'230';
   update();saveState();
  }));
- restoreState();update();
+ update();
 })();
 </script>
 
