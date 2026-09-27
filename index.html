@@ -244,6 +244,56 @@ button:active,.tab:active,[role="button"]:active{transform:scale(.96);filter:bri
 .validationItem.error,.validationItem.info{display:block!important}
 #validationList:empty::after{content:"Причин не найдено";display:block;color:var(--muted);font-size:12px;padding:10px 2px}
 </style>
+<style id="electroCalcStyles">
+/* Independent electrocalculator UI. The report and its existing controls remain untouched. */
+.topNav{display:flex;align-items:center;gap:6px;padding-right:7px;min-width:0}
+.topNav .tabs{flex:1;min-width:0}
+.electroLaunch{flex:none;align-self:center;white-space:nowrap;background:#dceafd;color:#123f83;
+ font-size:12px;font-weight:850;padding:5px 9px;margin-bottom:4px;border:1px solid #b9d1f5}
+.electroModal{z-index:11000!important;padding:0!important;background:var(--bg)!important;right:auto!important;bottom:auto!important;height:100dvh!important;overflow:hidden!important}
+.electroModal .modalCard{width:100%;max-width:none;height:100%;height:100dvh;max-height:none;
+ border-radius:0;padding:0;margin:0;background:var(--bg)}
+.electroHeader{display:flex;align-items:center;gap:10px;background:#fff;border-bottom:1px solid var(--line);
+ padding:12px max(12px,env(safe-area-inset-right)) 10px max(12px,env(safe-area-inset-left));flex:none}
+.electroBack{font-size:22px;line-height:1;background:#eaf0f8;color:#154b96;width:40px;height:40px;flex:none}
+.electroHeading{flex:1;min-width:0}.electroHeading h2{font-size:17px;line-height:1.15;margin:0;color:#17212b}
+.electroHeading p{font-size:10px;line-height:1.25;color:var(--muted);margin:3px 0 0}
+.electroStage{font-size:10px;color:#2259a1;background:#e8f1ff;padding:5px 7px;border-radius:8px;white-space:nowrap;font-weight:800}
+.electroBody{flex:1;min-height:0;padding:12px max(12px,env(safe-area-inset-right))
+ calc(24px + env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));overscroll-behavior:contain}
+.electroInner{max-width:720px;margin:0 auto}
+.electroTabs{display:flex;gap:6px;overflow-x:auto;padding:1px 0 9px;scrollbar-width:thin}
+.electroTab{white-space:nowrap;flex:none;background:#e5ebf4;color:#40546e;font-size:12px;padding:9px 11px}
+.electroTab.active{background:#174ea6;color:#fff}
+.electroPanel[hidden],.electroError[hidden],.electroResult[hidden]{display:none!important}
+.electroCard{background:#fff;border:1px solid var(--line);border-radius:13px;padding:14px;margin:0 0 10px}
+.electroCard h3{font-size:15px;margin:0 0 7px}
+.electroCard p{font-size:13px;line-height:1.45;margin:6px 0;color:#445366}
+.electroEyebrow{color:#1b56a3;font-size:11px;font-weight:900;letter-spacing:.03em;text-transform:uppercase}
+.electroSamples{display:flex;gap:7px;flex-wrap:wrap;margin:11px 0 2px}
+.electroSample{font-size:12px;background:#e9f1fc;color:#174f9a;padding:8px 10px}
+.electroFields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 10px;margin-top:12px}
+.electroField{display:flex;flex-direction:column;gap:6px;min-width:0}
+.electroField label{font-size:12px;font-weight:800;line-height:1.35;color:#344054}
+.electroField input,.electroField select{width:100%;min-width:0;height:42px;border:1px solid #bdc9d8;
+ border-radius:9px;background:#fff;color:#1a2738;font-size:16px;padding:8px 10px;outline-offset:2px}
+.electroField select{font-size:13px;padding:7px 6px}
+.electroFull{grid-column:1/-1}
+.electroFine{font-size:11px;line-height:1.4;color:var(--muted);margin-top:10px}
+.electroResult{background:#f1f7ff;border:1px solid #c0d7f8}
+.electroMetricGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.electroMetric{border-radius:10px;background:#fff;padding:10px;border:1px solid #d7e5f7;min-width:0}
+.electroMetric span{font-size:11px;color:#50647d;display:block;margin-bottom:4px}
+.electroMetric strong{font-size:23px;color:#174ea6;line-height:1.25;overflow-wrap:anywhere}
+.electroMetric.secondary strong{font-size:19px}
+.electroNote{border-left:3px solid #edb347;background:#fffaf0;border-radius:4px;
+ padding:10px 11px;color:#694f1a;font-size:12px;line-height:1.45;margin-top:11px}
+.electroError{border:1px solid #e9b0a9;border-radius:10px;padding:10px 12px;color:#a12822;
+ background:#fff0ee;font-size:12px;line-height:1.4;margin-top:10px}
+.electroSoon{font-size:11px;font-weight:850;color:#8d6117;background:#fff0ca;padding:5px 8px;border-radius:999px;display:inline-block;margin-bottom:8px}
+.electroPlan{margin:8px 0;padding-left:18px;color:#46576b;font-size:13px;line-height:1.65}
+@media(max-width:370px){.electroLaunch{font-size:11px;padding:5px 6px}.electroCard{padding:11px}.electroStage{display:none}.electroFields{gap:10px 8px}}
+</style>
 </head>
 <body>
 <div class="top">
@@ -251,7 +301,10 @@ button:active,.tab:active,[role="button"]:active{transform:scale(.96);filter:bri
   <div><div class="brand">⚡ Отчётник</div><div class="sub">Конструктор оперативных отчётов</div></div>
   <div class="topBtns"><span id="saveState" class="saveState">✓</span><button id="searchBtn" title="Поиск">🔎</button><button id="notesBtn" title="Записная книжка">📝</button><button id="statsBtn" title="Статистика">📊</button><button id="undoBtn">↶</button><button id="redoBtn">↷</button><button id="calcBtn" title="Контроль расчётов">🧮</button><button id="workModeBtn" title="Рабочий режим">🔓</button><button id="toolsBtn">⚙️</button></div>
  </div>
+ <div class="topNav">
  <div class="tabs" id="tabs"></div>
+ <button type="button" id="electroCalcBtn" class="electroLaunch" title="Электрокалькулятор — отдельный модуль">⚡ Электро</button>
+</div>
 </div>
 
 <main>
@@ -514,6 +567,81 @@ button:active,.tab:active,[role="button"]:active{transform:scale(.96);filter:bri
     <button id="exportBtn">Экспорт JSON</button><button id="importBtn">Импорт JSON</button>
    </div><input id="importFile" type="file" accept=".json,application/json" hidden></div>
    <div class="card"><h3>Структура листа</h3><div class="small">Здесь можно менять порядок, дублировать и удалять. Добавлять удобнее кнопками ＋ прямо в нужном месте.</div><div id="tree"></div></div>
+  </div>
+ </div>
+</div>
+
+<!-- Isolated electrical calculator. Existing report markup is unchanged. -->
+<div class="modal electroModal" id="electroModal" role="dialog" aria-modal="true" aria-labelledby="electroTitle">
+ <div class="modalCard">
+  <div class="electroHeader">
+   <button type="button" class="electroBack" data-close="electroModal" aria-label="Вернуться в Отчётник">←</button>
+   <div class="electroHeading"><h2 id="electroTitle">⚡ Электрокалькулятор</h2><p>Отдельный раздел Отчётника · работает офлайн</p></div>
+   <span class="electroStage">Этап 1</span>
+  </div>
+  <div class="electroBody scroll">
+   <div class="electroInner">
+    <div class="electroTabs" role="tablist" aria-label="Разделы электрокалькулятора">
+     <button type="button" class="electroTab active" data-electro-tab="load" role="tab" aria-selected="true" aria-controls="electroLoad">Нагрузка</button>
+     <button type="button" class="electroTab" data-electro-tab="cable" role="tab" aria-selected="false" aria-controls="electroCable">Кабель</button>
+     <button type="button" class="electroTab" data-electro-tab="breaker" role="tab" aria-selected="false" aria-controls="electroBreaker">Автомат</button>
+     <button type="button" class="electroTab" data-electro-tab="convert" role="tab" aria-selected="false" aria-controls="electroConvert">Конвертер</button>
+    </div>
+
+    <section class="electroPanel" id="electroLoad" data-electro-panel="load" role="tabpanel">
+     <div class="electroCard">
+      <div class="electroEyebrow">Быстрый расчёт</div>
+      <h3>Мощность и ток нагрузки</h3>
+      <p>Например, укажи 3 обогревателя по 2 кВт — калькулятор покажет суммарную мощность и расчётный ток. Все приборы считаются включёнными одновременно.</p>
+      <div class="electroSamples">
+       <button type="button" class="electroSample" data-electro-example="2">2 × 2 кВт</button>
+       <button type="button" class="electroSample" data-electro-example="3">3 × 2 кВт</button>
+      </div>
+     </div>
+     <div class="electroCard">
+      <h3>Исходные данные</h3>
+      <div class="electroFields">
+       <div class="electroField"><label for="ecCount">Количество приборов</label><input id="ecCount" type="text" inputmode="numeric" autocomplete="off" value="3"></div>
+       <div class="electroField"><label for="ecPower">Мощность одного, кВт</label><input id="ecPower" type="text" inputmode="decimal" autocomplete="off" value="2"></div>
+       <div class="electroField electroFull"><label for="ecPhase">Тип электросети</label><select id="ecPhase"><option value="single">Однофазная (1~)</option><option value="three">Трёхфазная, симметричная (3~)</option></select></div>
+       <div class="electroField"><label for="ecVoltage" id="ecVoltageLabel">Напряжение, В</label><input id="ecVoltage" type="text" inputmode="decimal" autocomplete="off" value="230"></div>
+       <div class="electroField"><label for="ecCos">cos φ нагрузки</label><input id="ecCos" type="text" inputmode="decimal" autocomplete="off" value="1"></div>
+      </div>
+      <div class="electroFine">Для обычных электрических обогревателей с резистивным нагревом cos φ ≈ 1. Можно вводить запятую или точку.</div>
+      <div id="ecError" class="electroError" aria-live="polite" hidden></div>
+     </div>
+     <div class="electroCard electroResult" id="ecResult" aria-live="polite">
+      <div class="electroEyebrow">Результат</div>
+      <div class="electroMetricGrid">
+       <div class="electroMetric"><span>Общая мощность</span><strong id="ecTotal">6 кВт</strong></div>
+       <div class="electroMetric"><span id="ecCurrentLabel">Расчётный ток</span><strong id="ecCurrent">26,1 А</strong></div>
+       <div class="electroMetric secondary electroFull"><span>Полная мощность</span><strong id="ecApparent">6 кВА</strong></div>
+      </div>
+      <div class="electroNote" id="ecResultNote">Это расчёт тока, а не готовый подбор кабеля или автомата. Для безопасного выбора защиты необходимы условия монтажа и данные линии.</div>
+     </div>
+    </section>
+
+    <section class="electroPanel" id="electroCable" data-electro-panel="cable" role="tabpanel" hidden>
+     <div class="electroCard"><span class="electroSoon">Следующий этап</span><h3>Подбор сечения кабеля</h3>
+      <p>Здесь появится подбор кабеля по нагрузке с отдельными проверками допустимого тока и падения напряжения.</p>
+      <ul class="electroPlan"><li>Медь или алюминий, число нагруженных жил.</li><li>Длина линии и способ прокладки.</li><li>Температура, группировка кабелей и другие поправки.</li><li>Проверка по применимым нормам и документации кабеля.</li></ul>
+      <div class="electroNote">Пока автоматические рекомендации по сечению отключены: одной мощности для безопасного подбора недостаточно.</div>
+     </div>
+    </section>
+
+    <section class="electroPanel" id="electroBreaker" data-electro-panel="breaker" role="tabpanel" hidden>
+     <div class="electroCard"><span class="electroSoon">Следующий этап</span><h3>Подбор автоматического выключателя</h3>
+      <p>Будем учитывать расчётный ток, допустимый ток выбранного кабеля, условия короткого замыкания и тип подключённой нагрузки.</p>
+      <div class="electroNote">Автомат защищает линию, поэтому его номинал нельзя выбирать только по суммарной мощности приборов.</div>
+     </div>
+    </section>
+
+    <section class="electroPanel" id="electroConvert" data-electro-panel="convert" role="tabpanel" hidden>
+     <div class="electroCard"><span class="electroSoon">Следующий этап</span><h3>Конвертер электрических величин</h3>
+      <p>Запланированы преобразования Вт ↔ кВт, А ↔ кА, расчёты кВА, cos φ, активной и реактивной мощности, сопротивления и падения напряжения.</p>
+     </div>
+    </section>
+   </div>
   </div>
  </div>
 </div>
@@ -1852,6 +1980,82 @@ render();
 restoreCoreFromIndexedDBIfNeeded();
 </script>
 
+
+<script id="electroCalcModule">
+/* Separate module: does not change project, report data, validation, or existing calculator. */
+(()=>{
+ 'use strict';
+ const DATA_KEY='otchetnik_electrocalc_v1';
+ const el=id=>document.getElementById(id);
+ const inputs=['ecCount','ecPower','ecPhase','ecVoltage','ecCos'];
+ const standard={ecCount:'3',ecPower:'2',ecPhase:'single',ecVoltage:'230',ecCos:'1'};
+ const format=(n,d=1)=>new Intl.NumberFormat('ru-RU',{maximumFractionDigits:d}).format(n);
+ function getState(){const s={};inputs.forEach(id=>s[id]=el(id).value);return s}
+ function saveState(){try{localStorage.setItem(DATA_KEY,JSON.stringify(getState()))}catch(e){/* storage unavailable */}}
+ function restoreState(){
+  let saved=null;
+  try{saved=JSON.parse(localStorage.getItem(DATA_KEY)||'null')}catch(e){}
+  if(!saved||typeof saved!=='object')return;
+  inputs.forEach(id=>{if(typeof saved[id]==='string'&&saved[id].length<24)el(id).value=saved[id]});
+  if(!['single','three'].includes(el('ecPhase').value))el('ecPhase').value='single';
+ }
+ function parsePositive(text){
+  const raw=String(text).trim();
+  if(!/^\d+(?:[.,]\d+)?$/.test(raw))return NaN;
+  return Number(raw.replace(',','.'));
+ }
+ function calculate(){
+  const n=parsePositive(el('ecCount').value);
+  const p=parsePositive(el('ecPower').value);
+  const u=parsePositive(el('ecVoltage').value);
+  const cos=parsePositive(el('ecCos').value);
+  const three=el('ecPhase').value==='three';
+  const errors=[];
+  if(!Number.isInteger(n)||n<1||n>100)errors.push('Количество: целое число от 1 до 100.');
+  if(!Number.isFinite(p)||p<=0||p>10000)errors.push('Мощность прибора должна быть больше нуля.');
+  if(!Number.isFinite(u)||u<50||u>1000)errors.push('Укажи напряжение от 50 до 1000 В.');
+  if(!Number.isFinite(cos)||cos<=0||cos>1)errors.push('cos φ должен быть больше 0 и не выше 1.');
+  el('ecVoltageLabel').textContent=three?'Линейное напряжение, В':'Фазное напряжение, В';
+  const err=el('ecError'),res=el('ecResult');
+  if(errors.length){err.textContent=errors.join(' ');err.hidden=false;res.hidden=true;return}
+  err.hidden=true;res.hidden=false;
+  const kw=n*p;
+  const current=kw*1000/(u*cos*(three?Math.sqrt(3):1));
+  const kva=kw/cos;
+  el('ecTotal').textContent=format(kw,3)+' кВт';
+  el('ecCurrentLabel').textContent=three?'Расчётный линейный ток':'Расчётный ток';
+  el('ecCurrent').textContent=format(current,1)+' А';
+  el('ecApparent').textContent=format(kva,3)+' кВА';
+  el('ecResultNote').textContent=three
+   ?'Результат верен только для симметричной трёхфазной нагрузки. Если однофазные приборы распределены неравномерно, ток каждой фазы нужно считать отдельно. Подбор кабеля и автомата будет отдельным этапом.'
+   :'Предполагается одновременная работа всех приборов. Для выбора кабеля и автомата необходимы дополнительные условия: материал, прокладка, длина и параметры защиты.';
+ }
+ function showPanel(name){
+  document.querySelectorAll('[data-electro-tab]').forEach(b=>{
+   const active=b.dataset.electroTab===name;
+   b.classList.toggle('active',active);b.setAttribute('aria-selected',String(active));
+  });
+  document.querySelectorAll('[data-electro-panel]').forEach(p=>p.hidden=p.dataset.electroPanel!==name);
+ }
+ const electroScreen=el('electroModal');
+ function fitElectroScreen(){electroScreen.style.width=document.documentElement.clientWidth+'px'}
+ window.addEventListener('resize',()=>{if(electroScreen.classList.contains('show'))fitElectroScreen()});
+ el('electroCalcBtn').addEventListener('click',()=>{
+  fitElectroScreen();calculate();showPanel('load');openModal('electroModal');
+ });
+ document.querySelectorAll('[data-electro-tab]').forEach(b=>b.addEventListener('click',()=>showPanel(b.dataset.electroTab)));
+ document.querySelectorAll('[data-electro-example]').forEach(b=>b.addEventListener('click',()=>{
+  el('ecCount').value=b.dataset.electroExample;
+  el('ecPower').value='2';el('ecPhase').value='single';el('ecVoltage').value='230';el('ecCos').value='1';
+  calculate();saveState();
+ }));
+ inputs.forEach(id=>el(id).addEventListener(id==='ecPhase'?'change':'input',()=>{
+  if(id==='ecPhase')el('ecVoltage').value=el('ecPhase').value==='three'?'400':'230';
+  calculate();saveState();
+ }));
+ restoreState();calculate();
+})();
+</script>
 
 <script>
 if ("serviceWorker" in navigator) {
