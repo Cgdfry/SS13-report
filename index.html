@@ -317,6 +317,21 @@ button:active,.tab:active,[role="button"]:active{transform:scale(.96);filter:bri
 #ecCableSource{border-top:1px solid #d7e5f7;margin-top:13px;padding-top:9px;line-height:1.5}
 #ecCableStatus{margin-top:12px}
 </style>
+
+<style id="electroBreakerAdviceCss">
+/* Scoped to the calculator; report styles and logic remain unchanged. */
+#ecBreakerAdvice{display:flex;flex-direction:column;gap:10px;margin:12px 0 4px}
+#ecBreakerAdvice:empty{display:none}
+#ecBreakerAdvice .ecAdviceTitle{font-size:14px;font-weight:850;color:#193e72;margin:2px 0 0}
+#ecBreakerAdvice .ecAdviceCard{border:1px solid #d6e2f0;border-left:4px solid #719ad2;border-radius:10px;background:white;padding:11px 12px}
+#ecBreakerAdvice .ecAdviceCard.caution{border-color:#f0d6a4;border-left-color:#dca43d;background:#fffaf0}
+#ecBreakerAdvice .ecAdviceCard.risk{border-color:#efc4c1;border-left-color:#d4473c;background:#fff5f4}
+#ecBreakerAdvice .ecAdviceCard.good{border-color:#b7e3cc;border-left-color:#249f63;background:#f3fcf6}
+#ecBreakerAdvice .ecAdviceCard strong{display:block;font-size:13px;color:#253b56;margin-bottom:5px}
+#ecBreakerAdvice .ecAdviceCard p{margin:0;color:#41536a;font-size:12px;line-height:1.5}
+#ecBreakerAdvice .ecAdviceFoot{font-size:11px;line-height:1.45;color:#576d86;margin:0 1px 4px}
+</style>
+
 </head>
 <body>
 <div class="top">
@@ -697,6 +712,7 @@ button:active,.tab:active,[role="button"]:active{transform:scale(.96);filter:bri
       <div class="electroEyebrow">Проверка защиты</div>
       <div class="electroMetricGrid"><div class="electroMetric"><span>Номинал автомата</span><strong id="ecBreakerSelected">—</strong></div><div class="electroMetric"><span>Ток кабеля после поправки</span><strong id="ecBreakerIz">—</strong></div></div>
       <div id="ecBreakerChecks" class="electroChecks"></div>
+      <div id="ecBreakerAdvice" class="electroBreakerAdvice" aria-live="polite"></div>
       <div class="electroNote">Проверка по Iᵦ ≤ Iₙ ≤ Iₓ предварительна и применима к обычным автоматам с фиксированным расцепителем. Для окончательного выбора нужны I₂ ≤ 1,45 Iₓ, время отключения, петля замыкания, термостойкость при КЗ, требования к УЗО/дифавтомату и документация производителя.</div>
      </div>
     </section>
@@ -2242,19 +2258,87 @@ restoreCoreFromIndexedDBIfNeeded();
   if(load.cos<0.95)notes.push('Оценка ΔU принимает индуктивную реактивность X≈0,08 Ом/км; для ёмкостной нагрузки модель неприменима.');
   notes.push('Таблицы 4–7 не заменяют проверки минимального сечения, требований к кабелю, КЗ, защиты и проекта.');
   set('ecCableStatus').text(notes.join('\n'));
-  return{...chosen,ib:load.amps,heatOK,dropOK,load,material:mat,method:key,source:src};
+  return{...chosen,ib:load.amps,heatOK,dropOK,load,material:mat,method:key,source:src,
+   candidates,dropLimit,manual};
  }
  function chk(kind,msg){const e=document.createElement('div');e.className='electroCheck '+kind;e.textContent=msg;return e}
+ function adviceCard(kind,title,body){
+  const node=document.createElement('div');node.className='ecAdviceCard '+kind;
+  const head=document.createElement('strong');head.textContent=title;
+  const paragraph=document.createElement('p');paragraph.textContent=body;
+  node.append(head,paragraph);return node;
+ }
+ function adviceTitle(text){const e=document.createElement('div');e.className='ecAdviceTitle';e.textContent=text;return e}
+ function adviceFoot(text){const e=document.createElement('p');e.className='ecAdviceFoot';e.textContent=text;return e}
+ function breakerAdvice(load,cable,nominal,automatic){
+  const root=el('ecBreakerAdvice');root.replaceChildren();
+  if(!load||!cable)return;
+  const ib=load.amps,iz=cable.iz,f=format,validNominal=nominal!==null&&Number.isFinite(nominal);
+  const below=nominals.filter(n=>n+1e-8<ib).at(-1)||null;
+  const above=nominals.find(n=>n>iz+1e-8)||null;
+  const noFit=automatic&&!validNominal;
+  root.append(adviceTitle('Почему такой результат'));
+  if(noFit){
+   if(!cable.heatOK)root.append(adviceCard('risk','Сначала не проходит сам кабель',
+    'Расчётный ток '+f(ib,2)+' А выше допустимых '+f(iz,2)+' А. Увеличение номинала автомата этого не исправит: проверь сечение, условия прокладки и поправки.'));
+   else root.append(adviceCard('caution','Кабель выдерживает ток, но нет подходящего фиксированного номинала',
+    'Для обычного автомата с нерегулируемым тепловым расцепителем требуется '+f(ib,2)+' А ≤ Iₙ ≤ '+f(iz,2)+' А. В доступном списке номиналов такого значения нет. Кабель по нагреву от этого не становится неподходящим.'));
+  }else if(validNominal){
+   if(nominal+1e-8<ib)root.append(adviceCard('caution',f(nominal,0)+' А — ниже расчётной нагрузки',
+    'При длительной нагрузке '+f(ib,2)+' А автомат может отключать линию после выдержки времени. Он не обязан отключиться сразу при превышении номинала. Уменьши одновременно работающую нагрузку либо пересмотри всю линию и защиту.'));
+   if(nominal>iz+1e-8)root.append(adviceCard('risk',f(nominal,0)+' А — выше допустимого тока кабеля',
+    'Кабель допускает '+f(iz,2)+' А после поправок. Автомат '+f(nominal,0)+' А не обеспечивает требуемого согласования от перегрузки: при длительном превышении тока кабель может перегреваться, изоляция стареть, а при неблагоприятных условиях возникает пожарный риск. Уменьшать защиту можно только вместе с расчётной нагрузкой; иначе пересмотри сечение или условия прокладки.'));
+   if(nominal+1e-8>=ib&&nominal<=iz+1e-8)root.append(adviceCard('good','По рабочему току согласование выполнено',
+    f(ib,2)+' А ≤ '+f(nominal,0)+' А ≤ '+f(iz,2)+' А. Это пока не подтверждает отключающую способность, ток КЗ в конце линии, время отключения и тепловую стойкость кабеля.'));
+  }
+  if(!cable.dropOK)root.append(adviceCard('caution','Есть ограничение по падению напряжения',
+   'Оценка ΔU = '+f(cable.drop.percent,2)+' % выше выбранного предела '+f(cable.dropLimit,2)+' %. Даже если по токам всё подходит, эту проверку нужно решить отдельно.'));
+  root.append(adviceTitle('Что можно проверить вместо этого'));
+  if(noFit||validNominal&&(nominal+1e-8<ib||nominal>iz+1e-8)||!cable.dropOK||!cable.heatOK){
+   // Only propose sections present in the SAME selected PUE table and installation conditions.
+   const larger=(!cable.manual&&Array.isArray(cable.candidates))?cable.candidates.find(c=>
+    c.area>cable.area&&c.iz+1e-8>=ib&&c.drop.percent<=cable.dropLimit+1e-8&&bestNominal(ib,c.iz)!==null):null;
+   if(larger){const n=bestNominal(ib,larger.iz);
+    root.append(adviceCard('good','Проверить '+f(larger.area,2)+' мм² и автомат '+f(n,0)+' А',
+     'В том же столбце ПУЭ и при тех же поправках для '+f(larger.area,2)+' мм² допустимый ток '+f(larger.iz,2)+' А. '+
+     'Условие '+f(ib,2)+' ≤ '+f(n,0)+' ≤ '+f(larger.iz,2)+' А выполняется; расчётное ΔU ≈ '+f(larger.drop.percent,2)+' %. Это предварительный вариант, не готовое решение для монтажа.'));
+   }else if(cable.manual)root.append(adviceCard('caution','Уточнить паспорт другого кабеля',
+    'Здесь введён допустимый ток изготовителя. Автоматически переносить его на большее сечение нельзя: проверь паспортные данные конкретного кабеля и его фактическую прокладку.'));
+   else root.append(adviceCard('caution','Другого совместимого варианта в выбранной таблице не найдено',
+    'Проверь исходные данные, фактическую конструкцию кабеля и условия монтажа. Изменение способа прокладки на экране без изменения реальной трассы не повышает допустимый ток.'));
+   // Division means fully independent final circuits, not simply two devices at the end of one undersized feeder.
+   if(!load.three&&load.n>=2){
+    const maxOnLine=Math.ceil(load.n/2),partI=load.p*maxOnLine*1000/(load.u*load.cos),partN=bestNominal(partI,iz);
+    if(partN!==null)root.append(adviceCard('good','Проверить две независимые линии',
+     'Если распределить '+load.n+' прибор(а/ов) между двумя отдельными линиями, на наиболее загруженной будет не более '+maxOnLine+
+     ' шт. ('+f(load.p*maxOnLine,2)+' кВт, '+f(partI,2)+' А). Для каждой линии с тем же допустимым током '+f(iz,2)+
+     ' А предварительно возможен автомат '+f(partN,0)+' А. Каждой линии нужны собственный кабель и защита; общая питающая линия всё равно рассчитывается на полную нагрузку. Падение напряжения и КЗ проверить отдельно.'));
+   }
+   root.append(adviceCard('caution','Если меняешь прокладку или конструкцию',
+    'Выбери новый фактический столбец таблиц ПУЭ РК и снова пересчитай ток с поправками. Например, открытые отдельные провода и трёхжильный кабель в воздухе — разные случаи; их токи нельзя подменять друг другом.'));
+  }else root.append(adviceCard('good','Дополнительное увеличение сечения по одному лишь номиналу не требуется',
+   'Ток нагрузки укладывается в номинал, а номинал — в допустимый ток выбранной жилы. Остальные проектные проверки обязательны.'));
+  root.append(adviceTitle('Что произойдёт с другим номиналом'));
+  if(below!==null)root.append(adviceCard('caution',f(below,0)+' А: меньше расчётных '+f(ib,2)+' А',
+   'При полной продолжительной нагрузке возможно тепловое отключение. Это не гарантированное немедленное срабатывание; фактическое время зависит от времятоковой характеристики и температуры автомата.'));
+  else root.append(adviceCard('caution','Автомат ниже рабочего тока',
+   'Если поставить номинал ниже расчётного тока, при продолжительной полной нагрузке вероятны нежелательные отключения.'));
+  if(above!==null)root.append(adviceCard('risk',f(above,0)+' А: больше допустимых '+f(iz,2)+' А',
+   'Такой автомат не обеспечивает проверяемое здесь согласование с этим кабелем: он может допустить длительный ток выше расчётного допустимого тока жилы. Возможны перегрев и ускоренное старение изоляции; при неблагоприятных условиях — пожар.'));
+  else root.append(adviceCard('risk','Автомат выше допустимого тока кабеля',
+   'Не выбирай повышенный номинал без проверки защиты: при перегрузке кабель может перегреваться.'));
+  root.append(adviceFoot('B/C/D характеризуют область мгновенного расцепления, а не заменяют согласование номинала с нагрузкой и кабелем. Для промышленного аппарата с регулируемым тепловым расцепителем проверяется именно уставка Iᵣ и его документация; такой аппарат здесь автоматически не выбирается.'));
+ }
  function calculateBreaker(load,cable){
   const checks=el('ecBreakerChecks');checks.replaceChildren();
-  if(!load){set('ecBreakerLoad').text('Исходные данные некорректны.');set('ecBreakerSelected').text('—');set('ecBreakerIz').text('—');checks.append(chk('bad','Исправь вкладку «Нагрузка».'));return}
+  if(!load){set('ecBreakerLoad').text('Исходные данные некорректны.');set('ecBreakerSelected').text('—');set('ecBreakerIz').text('—');el('ecBreakerAdvice').replaceChildren();checks.append(chk('bad','Исправь вкладку «Нагрузка».'));return}
   set('ecBreakerLoad').text('Iᵦ = '+format(load.amps,2)+' А · '+(cable?'сечение '+format(cable.area,2)+' мм²':'не выбран/не проходит кабель'));
-  const req=el('ecBreakerNominal').value,nominal=req==='auto'?(cable?bestNominal(load.amps,cable.iz):null):num(req),curve=el('ecBreakerCurve').value;
+  const req=el('ecBreakerNominal').value,automatic=req==='auto',nominal=automatic?(cable?bestNominal(load.amps,cable.iz):null):num(req),curve=el('ecBreakerCurve').value;
   const icn=optional(el('ecBreakerIcn').value),ikMax=optional(el('ecIkMax').value),ikMin=optional(el('ecIkMin').value);
   set('ecBreakerSelected').text(nominal?format(nominal,0)+' А'+(curve?' · '+curve:'')+(icn!==null&&good(icn)?' · '+format(icn,1)+' кА':''):'Не подобран');
   set('ecBreakerIz').text(cable?format(cable.iz,2)+' А':'Неизвестен');
-  if(!cable){checks.append(chk('pending','Сначала проверь кабель и допустимый ток во вкладке «Кабель».'));return}
-  if(!nominal){checks.append(chk('bad','Стандартный номинал, удовлетворяющий Iᵦ ≤ Iₙ ≤ Iₓ, не найден. Это НЕ отменяет отдельный результат выбора сечения по нагреву.'));return}
+  if(!cable){el('ecBreakerAdvice').replaceChildren();checks.append(chk('pending','Сначала проверь кабель и допустимый ток во вкладке «Кабель».'));return}
+  if(!nominal){checks.append(chk('bad','В заданном диапазоне токов стандартный фиксированный номинал не найден. Причина и возможные варианты показаны ниже.'));breakerAdvice(load,cable,null,automatic);return}
   const over=nominal+1e-8>=load.amps&&nominal<=cable.iz+1e-8;
   checks.append(chk(over?'ok':'bad',(over?'Предварительно выполняется':'НЕ выполняется')+' Iᵦ ≤ Iₙ ≤ Iₓ: '+format(load.amps,2)+' ≤ '+format(nominal,0)+' ≤ '+format(cable.iz,2)+' А.'));
   checks.append(chk(cable.dropOK?'ok':'bad','Оценка ΔU: '+format(cable.drop.percent,2)+' % — '+(cable.dropOK?'в выбранном пределе':'превышен выбранный предел')));
@@ -2270,6 +2354,7 @@ restoreCoreFromIndexedDBIfNeeded();
   }
   if(!cable.heatOK||!cable.dropOK)checks.append(chk('bad','Выбранная жила не прошла одну из проверок.'));
   checks.append(chk('pending','Нужно отдельно подтвердить I₂ ≤ 1,45 Iₓ, термостойкость I²t при КЗ, петлю замыкания, время отключения, PE и условия производителя. Это не разрешение на монтаж.'));
+  breakerAdvice(load,cable,nominal,automatic);
  }
  function metric(label,value){const e=document.createElement('div');e.className='electroMetric';const s=document.createElement('span');s.textContent=label;const b=document.createElement('strong');b.textContent=value;e.append(s,b);return e}
  function calculateConverter(){
